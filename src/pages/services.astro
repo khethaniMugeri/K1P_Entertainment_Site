@@ -1,0 +1,97 @@
+---
+// services.astro: the SERVICES PAGE ("/services")
+// -----------------------------------------------------------------------------
+// Shows every service K1P offers as a grid of icon cards. The list comes from
+// src/data/services.js, so you edit the services there without touching this
+// layout. Each card has an icon, a short description and a "Get a Quote" button
+// that opens the contact form pre-filled with that service.
+// -----------------------------------------------------------------------------
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { site } from '../data/site.js';
+import { services } from '../data/services.js';
+
+// SEO: "Service" structured-data for the recording studio (the flagship service
+// shown on this page), tied back to the K1P business as the provider.
+const studioServiceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType: 'Recording studio',
+  name: 'Recording, Mixing & Mastering Studio',
+  description: `Recording studio in ${site.city}, ${site.region} for recording, mixing, mastering and custom beats — amapiano and house production. Plus DJ lessons, promotion and event services.`,
+  areaServed: `${site.city}, ${site.region}, South Africa`,
+  provider: { '@type': 'LocalBusiness', name: site.name, telephone: site.phoneLink },
+};
+---
+
+<BaseLayout
+  title="Recording, Mixing & Mastering, DJ Lessons & Event Services | K1P Thohoyandou"
+  description="K1P Entertainment in Thohoyandou, Limpopo: recording studio (record, mix & master), DJ (decks) lessons, music promotion, track distribution, videography, graphic design and event management."
+  structuredData={[studioServiceSchema]}
+>
+  {/* ===================================================================== */}
+  {/* INTRO                                                                  */}
+  {/* ===================================================================== */}
+  <section class="relative overflow-hidden">
+    {/* Soft red stage-glow behind the heading. */}
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute left-1/2 top-0 h-60 w-60 -translate-x-1/2 rounded-full bg-brand-red/20 blur-3xl"
+    >
+    </div>
+    <div class="container-page relative py-16 text-center sm:py-20">
+      <p class="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-brand-red sm:text-sm sm:tracking-[0.3em]">
+        What We Offer
+      </p>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl">Services</h1>
+      {/* Intro works in the key services + location naturally for local search. */}
+      <p class="mx-auto mt-5 max-w-2xl text-base text-grey sm:text-lg">
+        Recording, mixing and mastering, DJ lessons, promotion, distribution and
+        event services in Thohoyandou, Limpopo. Pick a service and ask for a quote.
+      </p>
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* SERVICES GRID, 1 column on phones → 2 on tablets → 3 on desktop.       */}
+  {/* ===================================================================== */}
+  <section class="container-page py-12 sm:py-16">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+      {
+        services.map((service) => (
+          <ServiceCard
+            name={service.name}
+            description={service.description}
+            icon={service.icon}
+            enquiry={service.enquiry}
+          />
+        ))
+      }
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* CLOSING CTA                                                            */}
+  {/* ===================================================================== */}
+  <section class="container-page pb-16">
+    <div class="mx-auto max-w-2xl rounded-xl border border-white/10 bg-surface p-6 text-center">
+      <h2 class="text-2xl text-white">Need More Than One?</h2>
+      <p class="mt-3 text-sm text-grey">
+        Tell us what you want and we will build a package for you. Message us on
+        WhatsApp for the quickest reply.
+      </p>
+      {/* WhatsApp primary, email quote secondary. */}
+      <div class="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+        <WhatsAppButton message="Hi K1P Entertainment, I'd like to put together a package of your services. Please can you help?" />
+        <a
+          href="/contact"
+          class="inline-block rounded border border-white/30 px-7 py-4 text-center font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+        >
+          Get a Quote By Email
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

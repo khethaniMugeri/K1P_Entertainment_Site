@@ -1,0 +1,186 @@
+---
+// piano-valley.astro: the PIANO VALLEY PAGE ("/piano-valley")
+// -----------------------------------------------------------------------------
+// Piano Valley is K1P's YouTube channel for house and amapiano mixes, posted
+// every two weeks. The brief asks for a BRIGHTER, PLAYFUL, COLOURFUL treatment
+// to match the colourful Piano Valley logo, while keeping the same site header
+// and footer (so it still feels part of K1P). We get the shared header/footer
+// for free by wrapping the page in <BaseLayout> as usual; the colour only lives
+// in THIS page's content (rainbow gradients, bright accents, rounded shapes).
+//
+// The most-watched videos and the channel link come from src/data/topMixes.js,
+// so you update them by editing that file.
+// -----------------------------------------------------------------------------
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { topMixes, channelUrl } from '../data/topMixes.js';
+
+// Playful gradient accents. We cycle through these so each mix card and each
+// placeholder gets a different bright colour combo (matches the logo's mood).
+const accents = [
+  'from-pink-500 via-fuchsia-500 to-purple-600',
+  'from-amber-400 via-orange-500 to-pink-500',
+  'from-cyan-400 via-sky-500 to-blue-600',
+  'from-lime-400 via-green-500 to-emerald-600',
+  'from-violet-500 via-purple-500 to-fuchsia-500',
+  'from-yellow-400 via-amber-500 to-orange-600',
+];
+---
+
+<BaseLayout
+  title="Piano Valley | K1P Amapiano & House Mixes on YouTube"
+  description="Piano Valley is K1P Entertainment's YouTube channel posting fresh amapiano and house mixes every two weeks. Watch the most-watched mixes and subscribe."
+>
+  {/* ===================================================================== */}
+  {/* HERO, colourful and playful.                                          */}
+  {/* ===================================================================== */}
+  <section class="relative overflow-hidden">
+    {/* Bright colour blobs behind the heading (decorative only). */}
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0">
+      <div class="absolute left-1/4 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-fuchsia-500/30 blur-3xl"></div>
+      <div class="absolute right-1/4 top-10 h-64 w-64 translate-x-1/2 rounded-full bg-cyan-400/30 blur-3xl"></div>
+      <div class="absolute left-1/2 top-24 h-56 w-56 -translate-x-1/2 rounded-full bg-amber-400/20 blur-3xl"></div>
+    </div>
+
+    <div class="container-page relative py-20 text-center sm:py-24">
+      <p class="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300 sm:text-sm sm:tracking-[0.3em]">
+        K1P On YouTube
+      </p>
+
+      {/* The real, colourful Piano Valley logo as the hero centrepiece. We keep
+          a screen-reader-only <h1> so search engines and assistive tech still
+          read the page name (the logo carries it visually). Mobile-first:
+          `h-28` (112px) on phones, scaling up to `h-44` on desktop. */}
+      <h1 class="sr-only">Piano Valley</h1>
+      <img
+        src="/images/logo/piano-valley-logo.png"
+        alt="Piano Valley logo"
+        class="mx-auto h-28 w-auto sm:h-36 md:h-44"
+      />
+
+      <p class="mx-auto mt-6 max-w-xl text-base text-white/90 sm:text-lg">
+        House and amapiano mixes from K1P. Fresh sounds, big vibes.
+      </p>
+
+      {/* Bi-weekly badge. */}
+      <p class="mx-auto mt-5 inline-block rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white">
+        New mixes every two weeks
+      </p>
+
+      {/* Subscribe CTA, YouTube red, rounded and playful. */}
+      <div class="mt-8">
+        <a
+          href={channelUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 rounded-full bg-[#FF0000] px-7 py-4 font-semibold uppercase tracking-wide text-white shadow-lg transition hover:bg-[#cc0000]"
+        >
+          {/* YouTube play icon. */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6z" />
+          </svg>
+          Subscribe on YouTube
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* MOST WATCHED MIXES — the channel's three most-viewed videos.           */}
+  {/* Responsive grid: 1 column on phones → 3 on desktop. Equal-height cards. */}
+  {/* Built from the `topMixes` array in src/data/topMixes.js.               */}
+  {/* ===================================================================== */}
+  <section class="container-page py-12 sm:py-16">
+    <div class="mb-8 text-center sm:mb-10">
+      <h2 class="text-3xl text-white sm:text-4xl md:text-5xl">Most Watched Mixes</h2>
+      <p class="mx-auto mt-3 max-w-xl text-grey">
+        Our three biggest mixes. Tap any one to watch on YouTube.
+      </p>
+    </div>
+
+    {/* `items-stretch` (the grid default) + `h-full` on each card keep all
+        three cards the SAME height even if a title wraps to two lines. */}
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      {
+        topMixes.map((mix, index) => {
+          // Pick a bright accent for this card (cycles through the list).
+          const accent = accents[index % accents.length];
+
+          // Where the card links (the watch page), and the two thumbnail URLs:
+          // we try the high-res "maxresdefault" first and fall back to the
+          // always-available "hqdefault" if it's missing (handled by onerror).
+          const watchUrl = `https://www.youtube.com/watch?v=${mix.youtubeId}`;
+          const thumbMaxRes = `https://img.youtube.com/vi/${mix.youtubeId}/maxresdefault.jpg`;
+          const thumbFallback = `https://img.youtube.com/vi/${mix.youtubeId}/hqdefault.jpg`;
+
+          // The title is optional — show a friendly fallback if it's blank so the
+          // cards stay the same height and never look empty.
+          const cardTitle = mix.title && mix.title.length > 0 ? mix.title : 'Piano Valley Mix';
+
+          return (
+            <a
+              href={watchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Watch ${cardTitle} on YouTube (number ${index + 1} most watched)`}
+              class="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface transition duration-200 hover:-translate-y-1 hover:border-white/30 hover:shadow-lg"
+            >
+              {/* THUMBNAIL, fixed 16:9 so the layout never jumps while it loads. */}
+              <div class="relative aspect-video w-full overflow-hidden bg-black">
+                <img
+                  src={thumbMaxRes}
+                  alt={`${cardTitle} thumbnail`}
+                  loading="lazy"
+                  class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  onerror={`this.onerror=null;this.src='${thumbFallback}'`}
+                />
+
+                {/* RED PLAY BUTTON, always visible (so it reads as a video on
+                    phones, where there's no hover), grows slightly on hover. */}
+                <div class="absolute inset-0 grid place-items-center">
+                  <span class="grid h-16 w-16 place-items-center rounded-full bg-[#FF0000] text-white shadow-lg transition duration-200 group-hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </span>
+                </div>
+
+                {/* "#N Most Watched" rank badge, top-left. */}
+                <span class="absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+                  #{index + 1} Most Watched
+                </span>
+              </div>
+
+              {/* TITLE + watch cue. `flex-1` + `mt-auto` push the cue to the
+                  bottom so every card lines up. A bright accent bar adds the
+                  playful Piano Valley energy. */}
+              <div class="flex flex-1 flex-col p-4">
+                <div class={`mb-3 h-1 w-12 rounded-full bg-gradient-to-r ${accent}`}></div>
+                <h3 class="text-lg text-white">{cardTitle}</h3>
+                <span class="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-cyan-300">
+                  Watch on YouTube
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition group-hover:translate-x-1" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </span>
+              </div>
+            </a>
+          );
+        })
+      }
+    </div>
+
+    {/* Second subscribe nudge under the grid. */}
+    <div class="mt-12 text-center">
+      <a
+        href={channelUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 rounded-full border-2 border-white/20 px-7 py-4 font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+      >
+        See all mixes on YouTube
+      </a>
+    </div>
+  </section>
+</BaseLayout>

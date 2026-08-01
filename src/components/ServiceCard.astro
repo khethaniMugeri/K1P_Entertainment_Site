@@ -1,0 +1,112 @@
+---
+// ServiceCard.astro
+// -----------------------------------------------------------------------------
+// One card for a single service: an ICON in a red badge, the service name, a
+// short description, and a "Get a Quote" button that opens the contact form
+// pre-filled with this service.
+//
+// Why a separate card from the photo Card? Services read better as ICON cards
+// than photo cards, so this focused component draws a crisp SVG icon instead of
+// a photo placeholder. Everything else (dark surface, red hover glow, full-width
+// button) matches the site style.
+//
+// Built mobile-first: full-width, so it stacks to one column on phones and lines
+// up in 2-3 columns in whatever grid the page provides.
+//
+// Booking: WhatsApp is the PRIMARY method, so each card leads with a green
+// "Book on WhatsApp" button (the chat opens pre-filled, naming this service),
+// with the email "Get a Quote" form offered underneath as a secondary option.
+// -----------------------------------------------------------------------------
+
+import WhatsAppButton from './WhatsAppButton.astro';
+
+const {
+  name, // service title
+  description, // one-line summary
+  icon, // which icon to draw (a key in the `icons` map below)
+  enquiry, // text used to pre-fill the contact form
+} = Astro.props;
+
+// The message pre-typed into WhatsApp when this service's button is tapped, so
+// the owner instantly sees which service the enquiry is about.
+const whatsappMessage = `Hi K1P Entertainment, I'm interested in your ${name} service. Please can you tell me more?`;
+
+// ICON MAP. Each entry is the inner shapes of a 24x24 Lucide-style SVG. We wrap
+// them in a shared <svg> below, so every icon shares the same size and stroke
+// (consistent look). To add an icon: add a new key here, then use that key as
+// the `icon` value in src/data/services.js.
+const icons = {
+  // people / management
+  management:
+    '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  // megaphone / promotion
+  promotion:
+    '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  // share / distribution
+  distribution:
+    '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>',
+  // calendar / events
+  event:
+    '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  // video camera / videography
+  video:
+    '<path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2" ry="2"/>',
+  // headphones / DJ lessons
+  lessons:
+    '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>',
+  // sliders / mixing
+  mix:
+    '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+  // pen tool / design
+  design:
+    '<path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/><circle cx="11" cy="11" r="2"/>',
+  // printer / printing
+  printing:
+    '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+};
+
+// Look up the chosen icon (fall back to the management icon if a key is wrong).
+const iconShapes = icons[icon] || icons.management;
+---
+
+<article class="flex h-full flex-col rounded-xl border border-white/10 bg-surface p-6 transition duration-200 hover:-translate-y-1 hover:border-brand-red/60 hover:shadow-glow">
+  {/* ICON BADGE, a rounded square with the red icon inside. */}
+  <div class="grid h-12 w-12 place-items-center rounded-lg bg-brand-red/15 text-brand-red">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+      set:html={iconShapes}
+    >
+    </svg>
+  </div>
+
+  {/* Title + description. `mb-6` guarantees a gap above the button even when the
+      text is long. */}
+  <h3 class="mt-4 text-xl text-white">{name}</h3>
+  <p class="mb-6 mt-2 text-sm text-grey">{description}</p>
+
+  {/* CALL-TO-ACTION AREA, pinned to the bottom (`mt-auto`) so buttons line up
+      across cards of different text lengths. WhatsApp is primary (green, on
+      top); the email "Get a Quote" form is the secondary outline option below.
+      Both are full width + 44px+ tall for easy tapping. */}
+  <div class="mt-auto flex flex-col gap-2">
+    {/* PRIMARY: green WhatsApp button, pre-filled with this service's name. */}
+    <WhatsAppButton message={whatsappMessage} block={true} />
+
+    {/* SECONDARY: the email quote form, pre-filled via ?enquiry= */}
+    <a
+      href={`/contact?enquiry=${encodeURIComponent(enquiry)}`}
+      class="block w-full rounded border border-white/25 px-5 py-3 text-center font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+    >
+      Get a Quote
+    </a>
+  </div>
+</article>

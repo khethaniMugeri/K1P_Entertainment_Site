@@ -1,0 +1,216 @@
+---
+// BaseLayout.astro
+// -----------------------------------------------------------------------------
+// The shared "shell" wrapped around EVERY page. Instead of each page repeating
+// the <head> tags, fonts, header, and footer, a page just does:
+//
+//   <BaseLayout title="..." description="...">
+//     ...the unique page content...
+//   </BaseLayout>
+//
+// and automatically gets the announcement bar, header, and footer. The page's
+// own content drops into the <slot /> in the middle.
+// -----------------------------------------------------------------------------
+
+import { site } from '../data/site.js';
+import AnnouncementBar from '../components/AnnouncementBar.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppFloat from '../components/WhatsAppFloat.astro';
+import '../styles/global.css'; // load Tailwind + our base styles once, site-wide
+
+// SELF-HOSTED FONTS. Instead of fetching Anton + Inter from Google (a
+// render-blocking third-party request that slows first paint), we bundle them
+// with the site so they load from our own domain — faster and more private.
+// `@fontsource/*` provides the @font-face CSS (with font-display: swap).
+import '@fontsource/anton'; // display headings (one weight)
+import '@fontsource/inter/400.css'; // body — regular
+import '@fontsource/inter/500.css'; // medium
+import '@fontsource/inter/600.css'; // semibold
+import '@fontsource/inter/700.css'; // bold
+
+// Props are values a page passes in. We give them sensible defaults so a page
+// can override the SEO title/description, but doesn't have to.
+//   title          – the COMPLETE, keyword-rich <title> for this page (it should
+//                    already include the brand + location; we use it as-is).
+//   description    – the page's <meta description> (aim ~150-160 characters).
+//   image          – the social-share preview picture (Open Graph image).
+//   imageAlt       – alt text describing that share image.
+//   structuredData – OPTIONAL extra JSON-LD objects for THIS page (e.g. the
+//                    Event + Service blocks on the home page, the MusicGroup
+//                    list on /artists).
+const {
+  title = `${site.name} | Recording Studio, Sound & Stage Hire in ${site.city}, ${site.region}`,
+  description = `${site.name} in ${site.city} (Venda), ${site.region} — recording studio, sound system & stage hire, DJ lessons, event equipment and the Piano Valley amapiano channel. Call or WhatsApp ${site.phone}.`,
+  image = '/images/og-image.png',
+  imageAlt = `${site.name} — recording studio and event equipment hire in ${site.city}, ${site.region}`,
+  structuredData = [],
+} = Astro.props;
+
+// Each page passes a complete, keyword-rich title (brand included), so we use it
+// exactly as given for the <title>, Open Graph and Twitter tags.
+const fullTitle = title;
+
+// CANONICAL URL: the one official address of this page on the live domain.
+// `Astro.site` is the site from astro.config.mjs (https://k1pentertainment.co.za).
+// Combining it with the current path gives the full canonical link, which tells
+// search engines "this is the real URL" (avoids duplicate-content problems).
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).href;
+
+// The social preview image as a FULL (absolute) URL, which WhatsApp/Facebook
+// require. Drop a 1200x630 image at public/images/og-image.jpg to use it.
+const ogImage = new URL(image, Astro.site).href;
+
+// JSON-LD: machine-readable facts about the business for Google. This is K1P's
+// sitewide identity (a LocalBusiness, which is also an Organization, so it serves
+// both roles). It goes on EVERY page with a stable `@id` so the per-page Service
+// / Event / MusicGroup blocks (added via `structuredData`) all tie back to it.
+const localBusiness = {
+  '@context': 'https://schema.org',
+  // Two types: it's a local business AND specifically an entertainment business.
+  '@type': ['LocalBusiness', 'EntertainmentBusiness'],
+  '@id': `${Astro.site?.href}#business`,
+  name: site.name,
+  description: `Recording studio, sound & stage hire and events company in ${site.city} (Venda), ${site.region}, South Africa. Recording, mixing & mastering, DJ lessons, event equipment hire, a record label and the Piano Valley amapiano channel.`,
+  url: Astro.site?.href,
+  telephone: site.phoneLink,
+  email: site.email,
+  image: ogImage,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: site.city, // Thohoyandou
+    addressRegion: site.region, // Limpopo
+    addressCountry: 'ZA',
+  },
+  // Serve BOTH names people search for: the town (Thohoyandou) and the wider
+  // area (Venda), for broader local-search coverage.
+  areaServed: [
+    `${site.city}, ${site.region}, South Africa`,
+    `Venda, ${site.region}, South Africa`,
+  ],
+  // Profiles that belong to K1P, so search engines connect them to this site.
+  sameAs: [site.instagramUrl, site.youtubeUrl],
+};
+
+// All the JSON-LD blocks to print: the business plus anything the page added.
+const jsonLdBlocks = [localBusiness, ...structuredData];
+---
+
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    {/* Basic, required meta tags. `lang="en-ZA"` above = English (South Africa),
+        our audience's locale. (Keep NO comment between <!doctype> and <html> —
+        it makes Astro drop the <html> wrapper.) */}
+    <meta charset="UTF-8" />
+    {/* Mobile-friendly: scale to the device width, allow zoom (accessibility). */}
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* Branded favicon (the little browser-tab icon) — an SVG vinyl record.
+        Providing it also stops the browser's default /favicon.ico 404. */}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    {/* SEO: a unique title + description per page (passed in as props). */}
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+
+    {/* Tell crawlers explicitly to index this page and follow its links. */}
+    <meta name="robots" content="index, follow" />
+
+    {/* Local-SEO geo hints: where the business is, for "near me" / local search. */}
+    <meta name="geo.region" content="ZA-LP" />
+    <meta name="geo.placename" content={`${site.city}, ${site.region}`} />
+
+    {/* Canonical URL: the single official address of this page. */}
+    <link rel="canonical" href={canonicalURL} />
+
+    {/* Open Graph tags so links preview nicely on WhatsApp/Facebook/Instagram. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_ZA" />
+
+    {/* Twitter card tags (also used by some other apps for link previews). */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+
+    {/* JSON-LD structured data: LocalBusiness on every page, plus any extra
+        blocks this page passed in (Event, MusicGroup). Search engines read
+        these to show rich results. They are data, not runnable code. */}
+    {
+      jsonLdBlocks.map((block) => (
+        <script type="application/ld+json" set:html={JSON.stringify(block)} />
+      ))
+    }
+
+    {/* Fonts are now SELF-HOSTED (bundled via @fontsource — see BaseLayout's
+        frontmatter imports), so there are no render-blocking Google Fonts
+        requests here anymore. They load from our own domain with font-display:
+        swap, so text shows instantly. */}
+  </head>
+
+  <!--
+    Body layout: `min-h-dvh` = at least the full screen height (so the footer
+    sits at the bottom even on short pages); `flex-col` stacks the announcement
+    bar, header, page content and footer from top to bottom.
+  -->
+  <body class="flex min-h-dvh flex-col bg-ink text-white">
+    {/* 1. Slim dismissible announcement bar, the very top of every page. */}
+    <AnnouncementBar />
+
+    {/* 2. Logo + navigation. */}
+    <Header />
+
+    {/* 3. The unique content of each page lands here.
+          `flex-1` makes it grow to fill the space, pushing the footer down. */}
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    {/* 4. Contact + socials + tagline. */}
+    <Footer />
+
+    {/* 5. Floating "Book on WhatsApp" button, fixed in the bottom-right corner
+          of every page so booking is always one tap away (WhatsApp is our
+          primary booking method). */}
+    <WhatsAppFloat />
+
+    {/* SCROLL-REVEAL: gently fade/raise any element marked class="reveal" as it
+        scrolls into view. We only HIDE them (via the `.reveal-on` class on
+        <html>) when JS + IntersectionObserver are available AND the visitor
+        hasn't asked for reduced motion — otherwise everything just shows. */}
+    <script>
+      const revealEls = document.querySelectorAll('.reveal');
+      const okToAnimate =
+        revealEls.length > 0 &&
+        'IntersectionObserver' in window &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (okToAnimate) {
+        // Tell the CSS it's safe to hide-then-reveal these elements.
+        document.documentElement.classList.add('reveal-on');
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target); // reveal once, then stop watching
+              }
+            }
+          },
+          { threshold: 0.12 }
+        );
+        revealEls.forEach((el) => observer.observe(el));
+      }
+    </script>
+  </body>
+</html>

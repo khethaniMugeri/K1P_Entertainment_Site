@@ -1,0 +1,235 @@
+---
+// Card.astro: ONE reusable card for the whole site
+// -----------------------------------------------------------------------------
+// This single component is flexible enough to cover every kind of card we need:
+//
+//   • EQUIPMENT  – photo + name + description + price + "Request a Quote" button
+//   • SERVICES   – photo/icon + name + description + "Enquire" button
+//   • PROFILE    – square photo + name + role (no button)
+//   • ARTISTS    – square photo + name + short bio (optional button/link)
+//   • AREA LINKS – photo + title + text, the WHOLE card links somewhere
+//
+// You turn features on/off just by passing (or not passing) props, see the list
+// below. Everything is optional except `title`, so the same component reshapes
+// itself for each use. Built mobile-first: the card is full-width and simply
+// sits in whatever grid the parent page provides, so cards stack to one column
+// on phones and spread into 2–3 columns on larger screens.
+// -----------------------------------------------------------------------------
+
+import WhatsAppButton from './WhatsAppButton.astro';
+import { webpFor } from '../lib/webp.js';
+
+const {
+  // --- Text content ---
+  title, // REQUIRED: the heading (item name, service, person's name, etc.)
+  text, // optional: a short description / bio line under the title
+  subtitle, // optional: a small line under the title (e.g. a role or category)
+  eyebrow, // optional: a tiny badge above the title (e.g. "Headline", a category)
+
+  // --- Image ---
+  image, // optional: real photo path, e.g. "/images/equipment/sound-system.jpg"
+  imageAlt, // optional: describes the photo (falls back to the title)
+  imageFallback, // optional: a BACKUP image URL to load if `image` fails (404).
+  //               Used for YouTube thumbnails where the high-res "maxresdefault"
+  //               may not exist, so we fall back to "hqdefault".
+  imageHint, // optional: filename to add, shown ON the placeholder so the owner
+  //            knows exactly which photo goes here (e.g. "equipment/projector.jpg")
+  imageShape = 'wide', // 'wide' = 16:9 (things) or 'square' = 1:1 (people)
+  imageFit = 'cover', // how the photo fills its box:
+  //   'cover'   = fill the box and crop overflow (best for people/scenes that
+  //               look fine cropped — the default).
+  //   'contain' = show the WHOLE photo, never cropped, centred with a little
+  //               space around it (best for logos / product shots that come in
+  //               mixed portrait/landscape shapes, so none get cut off).
+  imagePosition, // optional: which part of the photo to keep when it's cropped
+  //               in 'cover' mode. 'top' keeps the TOP visible (e.g. a person's
+  //               face); 'bottom' keeps the bottom. Defaults to the centre.
+
+  // --- Price (for equipment/services) ---
+  price, // optional: a fixed price string to show, e.g. "R2 500"
+  priceNote, // optional: small print under the price, e.g. "per standard gig"
+
+  // --- WhatsApp booking (the PRIMARY call-to-action) ---
+  whatsappMessage, // optional: if set, a green "Book on WhatsApp" button appears
+  //                 as the main CTA, with this text pre-filled into the chat
+  //                 (e.g. "Hi K1P, I want to hire the Sound System.")
+
+  // --- Button (a SECONDARY call-to-action inside the card) ---
+  buttonLabel, // optional: if set, a button with this text appears. When a
+  //             WhatsApp button is also shown, this becomes the secondary
+  //             (outline) option; on its own it's the solid red button.
+  buttonHref, // where that button links to
+
+  // --- Whole-card link (alternative to a button) ---
+  href, // optional: if set (and NO buttonLabel), the ENTIRE card is a link
+} = Astro.props;
+
+// If there's a card-wide link and no button, render the card as an <a>;
+// otherwise it's a plain <article>. (`Wrapper` becomes the chosen HTML tag.)
+const isLink = href && !buttonLabel;
+const Wrapper = isLink ? 'a' : 'article';
+
+// Pick the image aspect-ratio class from the `imageShape` prop.
+const ratioClass = imageShape === 'square' ? 'aspect-square' : 'aspect-video';
+
+// Which part of the image to keep when it's cropped to fill ('cover' mode).
+// e.g. 'top' (object-top) stops a portrait's face from being cropped out.
+const positionClass =
+  imagePosition === 'top'
+    ? 'object-top'
+    : imagePosition === 'bottom'
+      ? 'object-bottom'
+      : ''; // default = centred
+
+// Pick how the photo fills that box. 'contain' shows the whole image (with a
+// little padding so it doesn't touch the edges) and skips the zoom-on-hover
+// (which only makes sense when the image fills the box). 'cover' fills + crops
+// and gets the subtle hover zoom.
+const fitClass =
+  imageFit === 'contain'
+    ? `object-contain p-3 ${positionClass}`
+    : `object-cover ${positionClass} transition duration-300 group-hover:scale-105`;
+
+// A smaller WebP version of the photo, if one exists and saves bytes (else null).
+const webpSrc = webpFor(image);
+---
+
+<Wrapper
+  href={isLink ? href : undefined}
+  class={`group flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-surface transition duration-200 hover:-translate-y-1 hover:border-brand-red/60 hover:shadow-glow ${
+    isLink ? 'focus-visible:-translate-y-1' : ''
+  }`}
+>
+  {/* ---- IMAGE AREA ---- a fixed-ratio box so the layout never jumps while a
+       photo loads, and the image scales to fill without overflowing. ---- */}
+  <div class={`${ratioClass} w-full overflow-hidden bg-black`}>
+    {
+      image ? (
+        // <picture> serves the smaller WebP first, with the original as the
+        // fallback for browsers without WebP. `display:contents` (class
+        // "contents") means the wrapper adds no box of its own, so the <img>
+        // keeps filling the fixed-ratio area exactly as before.
+        <picture class="contents">
+          {webpSrc && <source srcset={webpSrc} type="image/webp" />}
+          <img
+            src={image}
+            alt={imageAlt || title}
+            loading="lazy"
+            class={`h-full w-full ${fitClass}`}
+            onerror={imageFallback
+              ? `this.onerror=null;this.src='${imageFallback}'`
+              : undefined}
+          />
+        </picture>
+      ) : (
+        // No photo yet → labelled placeholder so it's obvious what to add.
+        <div class="flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-surface to-black px-3 text-center">
+          <span class="text-xs uppercase tracking-widest text-grey">Photo coming soon</span>
+          {imageHint && <span class="text-[11px] text-grey/70">add: {imageHint}</span>}
+        </div>
+      )
+    }
+  </div>
+
+  {/* ---- BODY ---- `flex-1` lets it fill the remaining height so cards in the
+       same row line up neatly, whatever the amount of text. ---- */}
+  <div class="flex flex-1 flex-col p-5">
+    {/* Optional little badge above the title. */}
+    {
+      eyebrow && (
+        <span class="mb-2 inline-block w-fit rounded-full bg-brand-red px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+          {eyebrow}
+        </span>
+      )
+    }
+
+    {/* Title. (h3 inherits the bold uppercase display font site-wide.) */}
+    <h3 class="text-xl text-white transition group-hover:text-brand-red sm:text-2xl">
+      {title}
+    </h3>
+
+    {/* Optional subtitle, e.g. a role or small label. */}
+    {subtitle && <p class="mt-1 text-sm font-medium text-brand-red">{subtitle}</p>}
+
+    {/* Optional description / bio. */}
+    {text && <p class="mt-2 text-sm text-grey">{text}</p>}
+
+    {/* ---- PRICE ---- pushed to the bottom (`mt-auto`) so prices and buttons
+         line up across cards of different text lengths. Only shows if a `price`
+         or `priceNote` was provided. ---- */}
+    {
+      (price || priceNote) && (
+        <div class="mt-auto pt-5">
+          {price ? (
+            // Fixed price: amount in brand red, with small note beside it.
+            <p class="text-2xl font-semibold tabular-nums text-brand-red">
+              {price}
+              {priceNote && (
+                <span class="ml-1 align-middle text-xs font-normal text-grey">{priceNote}</span>
+              )}
+            </p>
+          ) : (
+            // No fixed price: just show the note (e.g. "Priced per event").
+            <p class="text-sm text-grey">{priceNote}</p>
+          )}
+        </div>
+      )
+    }
+
+    {/* ---- CALL-TO-ACTION AREA ---- WhatsApp is the PRIMARY booking method, so
+         the green "Book on WhatsApp" button sits on top, with the email quote
+         link below it as a secondary option. `mt-auto` pins the whole group to
+         the bottom (so CTAs line up across cards) unless a price is already
+         doing that job above. ---- */}
+    {
+      (whatsappMessage || buttonLabel) && (
+        <div class={`flex flex-col gap-2 ${price || priceNote ? 'mt-4' : 'mt-auto'}`}>
+          {/* PRIMARY: green WhatsApp button with the item name pre-filled. */}
+          {whatsappMessage && <WhatsAppButton message={whatsappMessage} block={true} />}
+
+          {/* SECONDARY: the email quote. It's solid red when it's the ONLY
+              button, but a quieter outline button when WhatsApp is shown too
+              (so there's one clear lead action). */}
+          {buttonLabel && (
+            <a
+              href={buttonHref}
+              class={`block w-full rounded px-5 py-3 text-center font-semibold uppercase tracking-wide transition ${
+                whatsappMessage
+                  ? 'border border-white/25 text-white hover:border-white hover:bg-white/5'
+                  : 'bg-brand-red text-white hover:bg-brand-red-dark'
+              }`}
+            >
+              {buttonLabel}
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    {/* ---- "EXPLORE" CUE ---- only when the whole card is a link (no button).
+         A small arrow that slides right on hover to hint it's clickable. ---- */}
+    {
+      isLink && (
+        <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-brand-red">
+          Explore
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="transition group-hover:translate-x-1"
+            aria-hidden="true"
+          >
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </span>
+      )
+    }
+  </div>
+</Wrapper>

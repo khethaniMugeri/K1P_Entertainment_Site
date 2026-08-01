@@ -1,0 +1,335 @@
+---
+// ArtistCard.astro
+// -----------------------------------------------------------------------------
+// One rich profile card for a single DJ on the Artists & DJs page. It shows:
+//   • a portrait photo (or a labelled placeholder until the photo is added)
+//   • the stage name + real name + location
+//   • genre "chips"
+//   • a multi-paragraph bio with a "Read more" toggle (so long bios don't
+//     overwhelm small phone screens — the full text is always in the page)
+//   • social links (Facebook / Instagram / TikTok) as labelled icon buttons
+//   • a green "Book on WhatsApp" button, pre-filled with this DJ's name
+//   • their YouTube mixes as clickable thumbnails
+//
+// MOBILE-FIRST LAYOUT: on phones everything stacks in one column (photo on top,
+// then the details). From the `lg` breakpoint up it becomes two columns — photo
+// beside the details — and the photo side ALTERNATES left/right per card (using
+// the `index`) to give the page a nice rhythm as you scroll.
+//
+// All the text/data comes from src/data/artists.js, so the owner edits content
+// there without touching this layout.
+// -----------------------------------------------------------------------------
+
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import WhatsAppButton from './WhatsAppButton.astro';
+import { webpFor } from '../lib/webp.js';
+
+const {
+  stageName,
+  realName, // optional: some acts only go by their stage name (then this line is skipped)
+  role, // optional: their craft, e.g. "Rapper / Producer / Song Writer"
+  eyebrow = 'DJ', // tiny label above the name — defaults to "DJ", pass "Artist" etc.
+  location,
+  image,
+  genres = [],
+  bio = [],
+  socials = [],
+  mixes = [], // YouTube VIDEO IDs → shown as thumbnails (for acts with mix videos)
+  links = [], // "links to their work" → labelled buttons (channels, streaming pages)
+  whatsappMessage,
+  index = 0, // position in the list — used to alternate the photo side on desktop
+} = Astro.props;
+
+// Does the photo file actually exist in public/ yet? We check at BUILD time so
+// that, until the owner drops the photo in, we show a tidy labelled placeholder
+// instead of a broken-image icon.
+const hasImage = image ? existsSync(path.join(process.cwd(), 'public', image)) : false;
+// The filename to show on the placeholder (e.g. "artists/prise-tag.jpg").
+const imageHint = image ? image.replace('/images/', '') : '';
+// A smaller WebP version of the photo, if one exists and saves bytes (else null).
+const webpSrc = webpFor(image);
+
+// A URL-safe id built from the stage name (e.g. "dj-techtonic"), used to link
+// the "Read more" button to the hidden part of THIS card's bio (so each card's
+// button only opens its own bio).
+const slug = stageName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+// On desktop, odd-numbered cards put the photo on the RIGHT (order-2) and the
+// details on the LEFT, so the layout zig-zags down the page. On mobile the photo
+// is always first (on top). `lg:` means "only from the large breakpoint up".
+const photoOrder = index % 2 === 1 ? 'lg:order-2' : 'lg:order-1';
+const detailOrder = index % 2 === 1 ? 'lg:order-1' : 'lg:order-2';
+
+// Platform icons (SVG, not emojis). Each entry is the inner shapes of a 24x24
+// icon; ArtistCard wraps them in a shared <svg>. Used for BOTH the social links
+// and the "links to their work" buttons. Apple Music uses a generic music-note
+// glyph (we don't fake the Apple logo); the text label makes it clear.
+// `default` is a fallback play icon for any platform we don't have an icon for.
+const socialIcons = {
+  facebook:
+    '<path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/>',
+  instagram:
+    '<rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>',
+  tiktok:
+    '<path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>',
+  youtube:
+    '<path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6z"/>',
+  spotify:
+    '<path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>',
+  applemusic:
+    '<path d="M19.95 1.65a.75.75 0 0 1 .3.6v13.45a3 3 0 0 1-2.18 2.88l-1.32.38a2.55 2.55 0 1 1-1.4-4.91l2.31-.66a1.5 1.5 0 0 0 1.09-1.44V7l-9 2.57v9.74a3 3 0 0 1-2.18 2.88l-1.32.38a2.55 2.55 0 1 1-1.4-4.91l2.31-.66a1.5 1.5 0 0 0 1.09-1.44V5.25a.75.75 0 0 1 .54-.72l10.5-3a.75.75 0 0 1 .66.12z"/>',
+  default:
+    '<path d="M8 5v14l11-7z"/>',
+};
+// Friendly platform names for the accessible labels (e.g. "Prise Tag on Instagram").
+const platformNames = {
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  spotify: 'Spotify',
+  applemusic: 'Apple Music',
+};
+---
+
+<article class="overflow-hidden rounded-2xl border border-white/10 bg-surface">
+  {/* The two-column grid (on lg+). `items-stretch` lets the photo fill the full
+      height of the card beside the text. */}
+  <div class="grid grid-cols-1 lg:grid-cols-5">
+    {/* ---------------------------------------------------------------------- */}
+    {/* PHOTO — full width on mobile, ~2/5 of the width on desktop.            */}
+    {/* ---------------------------------------------------------------------- */}
+    <div class={`relative ${photoOrder} lg:col-span-2`}>
+      {/* A tall portrait frame on mobile; on desktop it stretches to match the
+          text height. `aspect-[4/5]` keeps a flattering portrait shape. */}
+      <div class="aspect-[4/5] w-full overflow-hidden bg-black lg:h-full">
+        {
+          hasImage ? (
+            <picture class="contents">
+              {webpSrc && <source srcset={webpSrc} type="image/webp" />}
+              <img
+                src={image}
+                alt={realName ? `${stageName} — ${realName}` : stageName}
+                loading="lazy"
+                class="h-full w-full object-cover"
+              />
+            </picture>
+          ) : (
+            // No photo yet → labelled placeholder so it's obvious what to add.
+            <div class="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-surface to-black px-4 text-center">
+              <span class="font-display text-4xl text-white/80">{stageName}</span>
+              <span class="text-xs uppercase tracking-widest text-grey">Photo coming soon</span>
+              <span class="text-[11px] text-grey/70">add: {imageHint}</span>
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    {/* ---------------------------------------------------------------------- */}
+    {/* DETAILS — the text side. Comfortable padding that grows on bigger      */}
+    {/* screens. `lg:col-span-3` makes it the wider of the two columns.        */}
+    {/* ---------------------------------------------------------------------- */}
+    <div class={`flex flex-col p-6 sm:p-8 ${detailOrder} lg:col-span-3`}>
+      {/* Small red eyebrow label (e.g. "DJ" or "Artist"). */}
+      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-red">{eyebrow}</p>
+
+      {/* Stage name (the card's heading). */}
+      <h2 class="mt-2 text-3xl text-white sm:text-4xl">{stageName}</h2>
+
+      {/* Real name — only if provided (some acts go by their stage name only). */}
+      {realName && <p class="mt-1 text-base text-grey">{realName}</p>}
+
+      {/* Role / craft, e.g. "Rapper / Producer / Song Writer" — if provided. */}
+      {role && <p class="mt-1 text-sm font-medium text-brand-red">{role}</p>}
+
+      {/* Location row, with a small pin icon. */}
+      <p class="mt-2 inline-flex items-center gap-1.5 text-sm text-grey">
+        <svg class="shrink-0 text-brand-red" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        {location}
+      </p>
+
+      {/* GENRE CHIPS. Just labels (not buttons), so they wrap freely. */}
+      {
+        genres.length > 0 && (
+          <ul class="mt-4 flex flex-wrap gap-2">
+            {genres.map((genre) => (
+              <li class="rounded-full border border-brand-red/40 bg-brand-red/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+                {genre}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      {/* BIO. The first paragraph always shows; any further paragraphs sit in a
+          hidden block that the "Read more" button reveals. Comfortable line
+          spacing keeps the long text easy to read. */}
+      <div class="mt-5 space-y-4 text-sm leading-relaxed text-grey sm:text-base">
+        <p>{bio[0]}</p>
+
+        {
+          bio.length > 1 && (
+            <>
+              {/* The rest of the bio — hidden until "Read more" is tapped. The
+                  id links it to the button below via aria-controls. */}
+              <div id={`bio-rest-${slug}`} class="hidden space-y-4">
+                {bio.slice(1).map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                class="bio-toggle inline-flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-brand-red transition hover:text-brand-red-dark"
+                aria-expanded="false"
+                aria-controls={`bio-rest-${slug}`}
+                data-more="Read more"
+                data-less="Read less"
+              >
+                Read more
+                <svg class="bio-toggle-icon transition" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+            </>
+          )
+        }
+      </div>
+
+      {/* SOCIAL LINKS — labelled icon buttons (icon + handle), each at least a
+          44px-tall tap target. They open in a new tab. */}
+      {
+        socials.length > 0 && (
+          <div class="mt-6">
+            <h3 class="sr-only">Follow {stageName}</h3>
+            <ul class="flex flex-wrap gap-2">
+              {socials.map((social) => (
+                <li>
+                  <a
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${stageName} on ${platformNames[social.platform] || social.platform}`}
+                    class="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm text-grey transition hover:border-white hover:text-white"
+                  >
+                    <svg class="shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" set:html={socialIcons[social.platform] || ''} />
+                    <span>{social.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      {/* PRIMARY CTA — green "Book on WhatsApp", pre-filled with this DJ's name.
+          Full width on mobile (easy thumb target), shrinks to its content on
+          larger screens. */}
+      <div class="mt-6">
+        <WhatsAppButton message={whatsappMessage} label="Book on WhatsApp" block={true} class="sm:w-auto" />
+      </div>
+
+      {/* MIXES — YouTube thumbnails. Tapping one opens the video on YouTube. */}
+      {
+        mixes.length > 0 && (
+          <div class="mt-8">
+            <h3 class="text-lg text-white">Latest Mixes</h3>
+            <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {mixes.map((videoId, mixIndex) => (
+                <a
+                  href={`https://www.youtube.com/watch?v=${videoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Watch ${stageName} mix ${mixIndex + 1} on YouTube`}
+                  class="group relative block overflow-hidden rounded-lg border border-white/10"
+                >
+                  {/* Thumbnail in a fixed 16:9 box so the layout never jumps. */}
+                  <div class="aspect-video w-full overflow-hidden bg-black">
+                    <img
+                      src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+                      alt={`${stageName} mix ${mixIndex + 1} thumbnail`}
+                      loading="lazy"
+                      class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  {/* Play button overlay — turns red on hover for energy. */}
+                  <div class="absolute inset-0 grid place-items-center">
+                    <span class="grid h-12 w-12 place-items-center rounded-full bg-black/55 text-white backdrop-blur transition group-hover:scale-110 group-hover:bg-brand-red">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </span>
+                  </div>
+                  {/* Small "Mix N" tag. */}
+                  <span class="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
+                    Mix {mixIndex + 1}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      {/* LINKS TO THEIR WORK — labelled buttons to channels / streaming pages
+          (YouTube, Spotify, Apple Music…). Used for acts whose work isn't a
+          simple list of mix videos. Each is a 44px-tall tap target and opens in
+          a new tab. The red-tinted style sets them apart from the social links. */}
+      {
+        links.length > 0 && (
+          <div class="mt-8">
+            <h3 class="text-lg text-white">Listen & Watch</h3>
+            <ul class="mt-3 flex flex-wrap gap-2">
+              {links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${stageName} on ${platformNames[link.platform] || link.platform}`}
+                    class="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-brand-red/40 bg-brand-red/10 px-4 py-2 text-sm font-medium text-white transition hover:border-brand-red hover:bg-brand-red/20"
+                  >
+                    <svg class="shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" set:html={socialIcons[link.platform] || socialIcons.default} />
+                    <span>{link.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</article>
+
+{/*
+  Browser script: handle the "Read more / Read less" buttons. Astro bundles this
+  ONCE no matter how many cards are on the page, so we find every .bio-toggle and
+  wire each one to its own hidden bio block (via the aria-controls id).
+*/}
+<script>
+  document.querySelectorAll('.bio-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      // The hidden bio block this button controls.
+      const targetId = btn.getAttribute('aria-controls');
+      const target = targetId ? document.getElementById(targetId) : null;
+      if (!target) return;
+
+      // Are we currently expanded? Flip it.
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      target.classList.toggle('hidden', expanded); // expanded → hide it again
+      btn.setAttribute('aria-expanded', String(!expanded));
+
+      // Swap the label ("Read more" ⇄ "Read less") and flip the chevron.
+      const label = expanded ? btn.dataset.more : btn.dataset.less;
+      btn.childNodes[0].textContent = label + ' ';
+      const icon = btn.querySelector('.bio-toggle-icon');
+      if (icon) icon.style.transform = expanded ? '' : 'rotate(180deg)';
+    });
+  });
+</script>

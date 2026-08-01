@@ -1,0 +1,149 @@
+---
+// Header.astro
+// -----------------------------------------------------------------------------
+// The site header shown at the top of every page (just under the announcement
+// bar). It contains:
+//   • the K1P logo (links back to the home page)
+//   • the main navigation menu (Home, About, Hire, Services, Artists,
+//     Piano Valley, Contact), pulled from src/data/site.js
+//   • a "hamburger" button that opens/closes the menu on small phones
+//
+// The current page's link is highlighted in red so visitors know where they are
+// (an accessibility + usability best practice: "you are here").
+// -----------------------------------------------------------------------------
+
+import { site, navLinks } from '../data/site.js';
+
+// Astro.url.pathname is the address of the page being shown, e.g. "/about".
+// We use it to figure out which nav link is the "active" (current) one.
+const currentPath = Astro.url.pathname;
+
+// Small helper: is the given link the page we're currently on?
+// We strip any trailing "/" so "/about" and "/about/" both match.
+const isActive = (href) => {
+  const here = currentPath.replace(/\/$/, '') || '/';
+  const link = href.replace(/\/$/, '') || '/';
+  return here === link;
+};
+---
+
+{/* `sticky top-0` keeps the header in view as you scroll. z-40 keeps it above
+    page content but below any modal we add later. */}
+<header class="sticky top-0 z-40 border-b border-white/10 bg-ink/95 backdrop-blur">
+  <nav
+    class="container-page flex items-center justify-between py-3"
+    aria-label="Main navigation"
+  >
+    {/* ---- LOGO ---- The "1" is shown in brand red to echo the real logo. ---- */}
+    <a
+      href="/"
+      class="font-display text-2xl tracking-wide text-white transition hover:text-grey"
+      aria-label={`${site.name} home`}
+    >
+      K<span class="text-brand-red text-glow">1</span>P
+      <span class="hidden sm:inline">ENTERTAINMENT</span>
+    </a>
+
+    {/* ---- DESKTOP MENU ---- hidden on phones/tablet, shown from `lg` (1024px)
+         up where there's room for all 7 links in a row. Below that we use the
+         hamburger so the links never cram together or wrap. ---- */}
+    <ul class="hidden items-center gap-1 lg:flex">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              // If this link is the current page, mark it for screen readers...
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              // ...and colour it red; otherwise grey that turns white on hover.
+              class={`rounded px-3 py-2 text-sm font-medium uppercase tracking-wide transition hover:text-white ${
+                isActive(link.href) ? 'text-brand-red' : 'text-grey'
+              }`}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    {/* ---- HAMBURGER BUTTON ---- visible on phones/tablet (hidden from lg up).
+         44x44px tap target. -- */}
+    <button
+      id="menu-toggle"
+      type="button"
+      class="grid h-11 w-11 place-items-center rounded text-white lg:hidden"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      {/* Three-line "menu" icon (SVG, not an emoji). */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
+  </nav>
+
+  {/* ---- MOBILE MENU ---- stacked links, hidden until the hamburger is tapped,
+       and always hidden from `lg` up (where the horizontal nav takes over). */}
+  <div id="mobile-menu" class="hidden border-t border-white/10 lg:hidden">
+    <ul class="container-page flex flex-col py-2">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              class={`block rounded px-3 py-3 text-base font-medium uppercase tracking-wide transition hover:bg-surface ${
+                isActive(link.href) ? 'text-brand-red' : 'text-white'
+              }`}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</header>
+
+{/*
+  Browser script: open/close the mobile menu when the hamburger is tapped.
+  We also keep aria-expanded in sync so screen readers announce the state.
+*/}
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+
+  if (toggle && menu) {
+    // Small helper so opening/closing always keeps the button's labels in sync.
+    const setOpen = (isOpen) => {
+      menu.classList.toggle('hidden', !isOpen);
+      toggle.setAttribute('aria-expanded', String(isOpen));
+      toggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+    };
+
+    // Tapping the hamburger flips the menu open/closed.
+    toggle.addEventListener('click', () => {
+      const willOpen = menu.classList.contains('hidden');
+      setOpen(willOpen);
+    });
+
+    // Tapping any link closes the menu (so the next page starts clean).
+    menu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => setOpen(false));
+    });
+  }
+</script>

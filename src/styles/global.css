@@ -1,0 +1,165 @@
+/* global.css
+   ----------------------------------------------------------------------------
+   Site-wide base styles. This file is imported once in BaseLayout.astro, so the
+   rules here apply to EVERY page.
+
+   It does three jobs:
+     1. Pull in Tailwind (the three @tailwind lines).
+     2. Store the brand colours as CSS variables (a backup / single source of
+        truth that plain CSS can also read).
+     3. Set sensible defaults: dark background, white text, the body font, nice
+        focus rings for keyboard users, and a couple of small helper classes.
+   ------------------------------------------------------------------------------ */
+
+/* 1. Tailwind's three layers. Order matters: base -> components -> utilities. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 2. Brand colours as CSS variables.
+      Tailwind already knows these (see tailwind.config.mjs); we mirror them here
+      so any hand-written CSS can use var(--brand-red) instead of a raw hex. */
+:root {
+  --brand-red: #e10600;
+  --brand-red-dark: #b30500;
+  --ink: #0a0a0a; /* page background */
+  --surface: #1a1a1a; /* cards / panels */
+  --grey: #b3b3b3; /* secondary text */
+}
+
+/* 3a. Page defaults: dark theme by default, white text, readable body font. */
+@layer base {
+  html {
+    scroll-behavior: smooth; /* gentle scrolling when clicking in-page links */
+  }
+
+  body {
+    background-color: var(--ink);
+    color: #ffffff;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 16px; /* never below 16px on mobile (stops iOS auto-zoom) */
+    -webkit-font-smoothing: antialiased; /* crisper text on screens */
+    overflow-x: hidden; /* safety net: never allow sideways scrolling on phones */
+  }
+
+  /* MOBILE-FIRST IMAGE SAFETY: by default every image shrinks to fit its box
+     and keeps its proportions, so a big photo can never push the page wider
+     than the screen (no horizontal scrolling). */
+  img,
+  svg,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Headings use the bold display font and are UPPERCASE by brand direction.
+     We set this once here so we don't repeat it on every heading. */
+  h1,
+  h2,
+  h3 {
+    font-family: 'Anton', 'Bebas Neue', Impact, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.02em; /* a touch of spacing suits condensed display fonts */
+    line-height: 1.05;
+  }
+
+  /* Accessibility: a clearly VISIBLE focus ring for people using the keyboard.
+     `:focus-visible` only shows it for keyboard users, not on mouse clicks. */
+  :focus-visible {
+    outline: 3px solid var(--brand-red);
+    outline-offset: 2px;
+  }
+
+  /* Respect users who asked their device to reduce motion (accessibility).
+     We switch off animations/smooth-scroll for them. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* 3b. Small reusable helper classes (the "components" layer). */
+@layer components {
+  /* The red neon-glow text effect for hero words / the "1" accent. */
+  .text-glow {
+    text-shadow: 0 0 12px rgba(225, 6, 0, 0.6);
+  }
+
+  /* A consistent max-width + side padding wrapper so content never touches the
+     screen edges and stays centred on big monitors. Use: class="container-page". */
+  .container-page {
+    width: 100%;
+    max-width: 80rem; /* ~1280px */
+    margin-inline: auto;
+    padding-inline: 1rem; /* 16px on small screens */
+  }
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2rem; /* 32px on tablet/desktop */
+    }
+  }
+}
+
+/* 3c. MOTION POLISH — page-entrance + scroll-reveal micro-animations.
+   ----------------------------------------------------------------------------
+   These give the site a smooth, "premium agency" feel. They are ALL wrapped in
+   `prefers-reduced-motion: no-preference`, so visitors who asked their device
+   to reduce motion get no animation at all (content shows instantly).
+   They only ever animate `opacity` and `transform`, which the browser can do on
+   the GPU — so they're cheap and never cause layout shift. */
+@media (prefers-reduced-motion: no-preference) {
+  /* PAGE ENTRANCE: each page's main content gently fades + rises in on load,
+     so navigating between pages feels like a smooth transition, not a hard cut. */
+  main {
+    animation: page-enter 0.5s ease-out both;
+  }
+
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* SCROLL REVEAL: elements with class="reveal" start slightly down + faded,
+     then ease into place when they scroll into view. The hidden start state is
+     only applied once JavaScript has added `.reveal-on` to <html> — so if JS is
+     off, nothing is ever hidden (graceful, no blank sections). */
+  .reveal-on .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
+    will-change: opacity, transform;
+  }
+  .reveal-on .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 3d. ACCESSIBLE RED TEXT.
+   ----------------------------------------------------------------------------
+   The brand red #E10600 is perfect on BUTTONS (white text on it passes WCAG),
+   but as small TEXT on our dark background it sits at ~4:1 — just under the
+   4.5:1 minimum. So for text only, we use a slightly brighter red that clears
+   4.5:1 on both the page (#0A0A0A) and card (#1A1A1A) backgrounds. This overrides
+   only the `.text-brand-red` text utility — `bg-brand-red` buttons are untouched,
+   so the brand red you see on buttons stays exactly #E10600. */
+@layer utilities {
+  .text-brand-red {
+    color: #ff3b30;
+  }
+}

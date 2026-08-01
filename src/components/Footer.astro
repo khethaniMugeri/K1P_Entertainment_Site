@@ -1,0 +1,108 @@
+---
+// Footer.astro
+// -----------------------------------------------------------------------------
+// The footer shown at the bottom of every page. It repeats the brand, the
+// tagline, and the ways to get in touch (phone/WhatsApp, email, Instagram).
+// All values come from src/data/site.js so they only ever live in one place.
+// -----------------------------------------------------------------------------
+
+import { site } from '../data/site.js';
+import WhatsAppButton from './WhatsAppButton.astro';
+
+// The current year, shown in the copyright line (updates itself every year).
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-20 border-t border-white/10 bg-black">
+  <div class="container-page grid gap-10 py-12 md:grid-cols-3">
+    {/* ---- Column 1: brand + tagline ---- */}
+    <div>
+      <a href="/" class="font-display text-2xl tracking-wide text-white">
+        K<span class="text-brand-red text-glow">1</span>P ENTERTAINMENT
+      </a>
+      <p class="mt-3 max-w-xs text-grey">{site.tagline}</p>
+    </div>
+
+    {/* ---- Column 2: contact details ---- */}
+    <div>
+      <h2 class="text-lg text-white">Get In Touch</h2>
+      <ul class="mt-4 space-y-3 text-grey">
+        {/* Phone / WhatsApp, "tel:" lets phones dial it with one tap. */}
+        <li>
+          <a
+            href={`tel:${site.phoneLink}`}
+            class="inline-flex items-center gap-2 transition hover:text-white"
+          >
+            {/* phone icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span>{site.phone} (call / WhatsApp)</span>
+          </a>
+        </li>
+
+        {/* Email, "mailto:" opens the visitor's email app. */}
+        <li>
+          <a
+            href={`mailto:${site.email}`}
+            class="inline-flex items-center gap-2 transition hover:text-white"
+          >
+            {/* email icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-10 6L2 7" />
+            </svg>
+            <span class="break-all">{site.email}</span>
+          </a>
+        </li>
+
+        {/* Instagram */}
+        <li>
+          <a
+            href={site.instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 transition hover:text-white"
+          >
+            {/* instagram icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5" />
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+            </svg>
+            <span>{site.instagramHandle}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    {/* ---- Column 3: quick call-to-action ---- */}
+    <div>
+      <h2 class="text-lg text-white">Ready To Book?</h2>
+      <p class="mt-4 text-grey">
+        Events, studio time and equipment hire. Message us on WhatsApp and we
+        will set it up.
+      </p>
+      {/* WhatsApp primary, email quote secondary. */}
+      <div class="mt-4 flex flex-col items-start gap-3">
+        <WhatsAppButton
+          message="Hi K1P Entertainment 👋 I'd like to make a booking / enquiry."
+          class="px-5 py-3"
+        />
+        <a
+          href="/contact"
+          class="inline-block rounded border border-white/25 px-5 py-3 font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+        >
+          Get A Quote By Email
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {/* ---- Bottom bar: copyright ---- */}
+  <div class="border-t border-white/10">
+    <div class="container-page py-5 text-center text-sm text-grey">
+      © {year} {site.name}. All rights reserved.
+    </div>
+  </div>
+</footer>

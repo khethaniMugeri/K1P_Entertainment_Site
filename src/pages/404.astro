@@ -1,0 +1,70 @@
+---
+// 404.astro: the "page not found" page.
+// -----------------------------------------------------------------------------
+// Astro builds this to /404.html, which Netlify/Vercel automatically serve when
+// someone hits a URL that doesn't exist. It's fully branded (dark, red accents,
+// music wording) and wraps in BaseLayout so it keeps the header, footer and the
+// floating WhatsApp button — so a lost visitor can still navigate or get in touch.
+// -----------------------------------------------------------------------------
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { navLinks } from '../data/site.js';
+---
+
+<BaseLayout
+  title="Page Not Found (404) | K1P Entertainment"
+  description="That page could not be found. Head back to the K1P Entertainment home page, or explore hire, services, artists and more."
+>
+  <section class="relative overflow-hidden">
+    {/* Soft red stage-glow behind the big 404. */}
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-red/20 blur-3xl"
+    >
+    </div>
+
+    <div class="container-page relative flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
+      {/* Big 404 — the middle "0" glows red to echo the brand "1" treatment. */}
+      <p class="font-display text-7xl leading-none text-white sm:text-8xl md:text-9xl">
+        4<span class="text-brand-red text-glow">0</span>4
+      </p>
+
+      <h1 class="mt-4 text-3xl sm:text-4xl md:text-5xl">This Track Doesn’t Exist</h1>
+      <p class="mx-auto mt-4 max-w-md text-base text-grey sm:text-lg">
+        The page you’re looking for has skipped a beat. Let’s get you back to the
+        music.
+      </p>
+
+      {/* Primary action back home + a quick jump to Contact. */}
+      <div class="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <a
+          href="/"
+          class="rounded bg-brand-red px-7 py-4 text-center font-semibold uppercase tracking-wide text-white shadow-glow transition hover:bg-brand-red-dark"
+        >
+          Back To Home
+        </a>
+        <a
+          href="/contact"
+          class="rounded border border-white/30 px-7 py-4 text-center font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+        >
+          Contact Us
+        </a>
+      </div>
+
+      {/* Helpful links to every main page, so the visitor isn't stuck. */}
+      <nav class="mt-10" aria-label="Site pages">
+        <ul class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-grey">
+          {
+            navLinks.map((link) => (
+              <li>
+                <a href={link.href} class="uppercase tracking-wide transition hover:text-white">
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+  </section>
+</BaseLayout>

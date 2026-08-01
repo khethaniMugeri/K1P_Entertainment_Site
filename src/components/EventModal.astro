@@ -1,0 +1,217 @@
+---
+// EventModal.astro
+// -----------------------------------------------------------------------------
+// A pop-up that appears shortly after a visitor lands on the home page, hyping
+// the headline event with a LIVE COUNTDOWN (days : hours : minutes : seconds).
+//
+// Key behaviours (from the project brief):
+//   • Reads the headline event from src/data/events.json (data-driven).
+//   • Shows ~1.5s after load, but only if the visitor hasn't dismissed it before
+//     (remembered in localStorage, so returning visitors aren't nagged).
+//   • Closes via the × button, the dark backdrop, or the Escape key.
+//
+// Mobile-first sizing: the panel is full-width with side padding on phones,
+// capped at a comfortable max width on larger screens, and its height is capped
+// to the screen so it can never overflow, it scrolls inside if very short.
+// -----------------------------------------------------------------------------
+
+import eventsData from '../data/events.json';
+
+// Grab the headline event (the one the modal promotes).
+const headline = eventsData.events.find((event) => event.isHeadline);
+
+// A per-event key so a NEW headline event shows the modal again to everyone.
+const seenKey = headline ? `k1p-modal-seen:${headline.title}` : '';
+
+// A friendly, human-readable date for under the title (e.g. "5 July 2026").
+// We build it on the server so it's correct no matter the visitor's settings.
+const niceDate = headline
+  ? new Date(headline.date).toLocaleDateString('en-ZA', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  : '';
+---
+
+{
+  headline && (
+    <div
+      id="event-modal"
+      data-seen-key={seenKey}
+      data-event-date={headline.date}
+      class="fixed inset-0 z-[100] hidden items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="event-modal-title"
+    >
+      {/* Dark backdrop. Tapping it closes the modal (id used by the script). */}
+      <div id="event-modal-backdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm" />
+
+      {/* The panel. max-w-md keeps it neat on desktop; w-full fills a phone.
+          max-h-[90vh] + overflow-y-auto guarantee it never spills off-screen. */}
+      <div class="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-brand-red/40 bg-surface p-6 text-center shadow-glow-lg sm:p-8">
+        {/* Close button, 44px tap target, top-right corner. */}
+        <button
+          id="event-modal-close"
+          type="button"
+          aria-label="Close"
+          class="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full text-grey transition hover:bg-white/10 hover:text-white"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        {/* Small eyebrow label. */}
+        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-brand-red">
+          Upcoming Event
+        </p>
+
+        {/* Title scales down on phones (text-3xl) and up on desktop (text-4xl). */}
+        <h2 id="event-modal-title" class="mt-3 text-3xl sm:text-4xl">
+          {headline.title}
+        </h2>
+
+        {/* Date + venue. */}
+        <p class="mt-2 text-sm text-grey">
+          {niceDate} • {headline.venue}
+        </p>
+
+        {/* The hype line. */}
+        <p class="mx-auto mt-4 max-w-sm text-sm text-white/90">
+          {headline.description}
+        </p>
+
+        {/* COUNTDOWN, four equal boxes that always fit (grid-cols-4).
+            `tabular-nums` keeps the digits from jiggling as they tick. */}
+        <div class="mt-6 grid grid-cols-4 gap-2 sm:gap-3" aria-hidden="true">
+          {[
+            { id: 'cd-days', label: 'Days' },
+            { id: 'cd-hours', label: 'Hours' },
+            { id: 'cd-mins', label: 'Mins' },
+            { id: 'cd-secs', label: 'Secs' },
+          ].map((box) => (
+            // Each box has a faint red border + red ring glow, and the big
+            // number carries the `text-glow` red halo, that's the "red glow"
+            // countdown look from the brief.
+            <div class="rounded-lg border border-brand-red/40 bg-black/50 py-3 shadow-glow">
+              <div
+                id={box.id}
+                class="font-display text-2xl tabular-nums text-white text-glow sm:text-3xl"
+              >
+                --
+              </div>
+              <div class="mt-1 text-[10px] uppercase tracking-wide text-grey sm:text-xs">
+                {box.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* A screen-reader-friendly text version of the countdown (numbers in
+            boxes are hidden from readers above; this announces time politely). */}
+        <p id="cd-sr" class="sr-only" aria-live="polite" />
+
+        {/* Primary call-to-action. Full width on phones so it's easy to tap. */}
+        <a
+          href={headline.ctaLink}
+          class="mt-6 block w-full rounded bg-brand-red px-6 py-4 font-semibold uppercase tracking-wide text-white shadow-glow transition hover:bg-brand-red-dark"
+        >
+          {headline.ctaLabel}
+        </a>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  // ---- Grab the elements we need from the page. ----
+  const modal = document.getElementById('event-modal');
+
+  if (modal) {
+    const backdrop = document.getElementById('event-modal-backdrop');
+    const closeBtn = document.getElementById('event-modal-close');
+    const seenKey = modal.dataset.seenKey;
+    // The event date/time as a timestamp (milliseconds) we can count down to.
+    const target = new Date(modal.dataset.eventDate).getTime();
+
+    // Number boxes + the screen-reader line.
+    const elDays = document.getElementById('cd-days');
+    const elHours = document.getElementById('cd-hours');
+    const elMins = document.getElementById('cd-mins');
+    const elSecs = document.getElementById('cd-secs');
+    const elSr = document.getElementById('cd-sr');
+
+    // Helper: always show two digits (e.g. 7 -> "07").
+    const pad = (n) => String(n).padStart(2, '0');
+
+    // Recalculate and paint the countdown once.
+    function tick() {
+      const now = Date.now();
+      let diff = target - now; // milliseconds left
+
+      if (diff <= 0) {
+        // Event time reached/passed, show zeros and stop counting.
+        elDays.textContent = '00';
+        elHours.textContent = '00';
+        elMins.textContent = '00';
+        elSecs.textContent = '00';
+        if (elSr) elSr.textContent = 'This event is happening now.';
+        clearInterval(timer);
+        return;
+      }
+
+      // Break the milliseconds down into days / hours / minutes / seconds.
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * (1000 * 60 * 60 * 24);
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * (1000 * 60 * 60);
+      const mins = Math.floor(diff / (1000 * 60));
+      diff -= mins * (1000 * 60);
+      const secs = Math.floor(diff / 1000);
+
+      elDays.textContent = pad(days);
+      elHours.textContent = pad(hours);
+      elMins.textContent = pad(mins);
+      elSecs.textContent = pad(secs);
+      if (elSr) elSr.textContent = `${days} days, ${hours} hours until the event.`;
+    }
+
+    // Show the modal (and start the countdown ticking every second).
+    let timer;
+    function openModal() {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      tick(); // paint immediately so there's no "--" flash
+      timer = setInterval(tick, 1000);
+      // Move keyboard focus to the close button for accessibility.
+      closeBtn?.focus();
+    }
+
+    // Hide the modal and remember the visitor has seen it.
+    function closeModal() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      clearInterval(timer);
+      if (seenKey) localStorage.setItem(seenKey, 'true');
+    }
+
+    // ---- Decide whether to show it ----
+    // Only pop up if this visitor hasn't dismissed THIS event before.
+    const alreadySeen = seenKey && localStorage.getItem(seenKey) === 'true';
+    if (!alreadySeen) {
+      // Wait ~1.5s so the page settles first, then reveal the modal.
+      setTimeout(openModal, 1500);
+    }
+
+    // ---- Ways to close it ----
+    closeBtn?.addEventListener('click', closeModal);
+    backdrop?.addEventListener('click', closeModal);
+    // Escape key closes it too (keyboard accessibility).
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+    });
+  }
+</script>

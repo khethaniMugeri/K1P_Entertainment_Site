@@ -1,0 +1,100 @@
+---
+// artists.astro: the ARTISTS & DJs PAGE ("/artists")
+// -----------------------------------------------------------------------------
+// A stack of rich profile cards for the DJs signed to / managed by K1P. The
+// roster comes from src/data/artists.js, so names, bios, photos, socials and
+// mixes are all edited there — this file only handles the page shell and layout.
+//
+// Each DJ is rendered by the reusable <ArtistCard> component. Cards are stacked
+// in ONE column (full width) because the bios are long and need room to read;
+// each card then splits into two columns (photo + details) on large screens.
+// Built mobile-first throughout.
+// -----------------------------------------------------------------------------
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArtistCard from '../components/ArtistCard.astro';
+import { artists } from '../data/artists.js';
+
+// SEO: one "MusicGroup" structured-data block per DJ so search engines
+// understand each act. Built straight from the data, so it stays in sync when
+// you edit the roster. The bio paragraphs are joined back into one description.
+const artistStructuredData = artists.map((artist) => ({
+  '@context': 'https://schema.org',
+  '@type': 'MusicGroup',
+  name: artist.stageName,
+  description: artist.bio.join(' '),
+  genre: artist.genres,
+  url: 'https://k1pentertainment.co.za/artists',
+}));
+---
+
+<BaseLayout
+  title="K1P Artists & DJs | Amapiano & House DJs in Thohoyandou, Limpopo"
+  description="Meet the DJs and artists signed to K1P Entertainment in Thohoyandou, Limpopo — Prise Tag, G-32, DJ Techtonic, ProVro and Megamind Nova. Book amapiano and house acts for your event."
+  structuredData={artistStructuredData}
+>
+  {/* ===================================================================== */}
+  {/* INTRO                                                                  */}
+  {/* ===================================================================== */}
+  <section class="relative overflow-hidden">
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute left-1/2 top-0 h-60 w-60 -translate-x-1/2 rounded-full bg-brand-red/20 blur-3xl"
+    >
+    </div>
+    <div class="container-page relative py-16 text-center sm:py-20">
+      <p class="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-brand-red sm:text-sm sm:tracking-[0.3em]">
+        The Roster
+      </p>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl">Artists & DJs</h1>
+      <p class="mx-auto mt-5 max-w-2xl text-base text-grey sm:text-lg">
+        The talent we sign, manage and push. Meet the K1P family — and book them
+        for your next event.
+      </p>
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* DJ PROFILE CARDS, stacked one per row with breathing room between.     */}
+  {/* `index` is passed so the cards can alternate the photo side on desktop. */}
+  {/* ===================================================================== */}
+  <section class="container-page space-y-8 py-8 sm:space-y-10 sm:py-12">
+    {
+      artists.map((artist, index) => (
+        <ArtistCard
+          stageName={artist.stageName}
+          realName={artist.realName}
+          role={artist.role}
+          eyebrow={artist.eyebrow}
+          location={artist.location}
+          image={artist.image}
+          genres={artist.genres}
+          bio={artist.bio}
+          socials={artist.socials}
+          mixes={artist.mixes}
+          links={artist.links}
+          whatsappMessage={artist.whatsappMessage}
+          index={index}
+        />
+      ))
+    }
+  </section>
+
+  {/* ===================================================================== */}
+  {/* CLOSING CTA, for artists who want to join.                             */}
+  {/* ===================================================================== */}
+  <section class="container-page pb-16">
+    <div class="mx-auto max-w-2xl rounded-xl border border-white/10 bg-surface p-6 text-center">
+      <h2 class="text-2xl text-white">Want To Join K1P?</h2>
+      <p class="mt-3 text-sm text-grey">
+        Are you an artist or DJ looking for a home? Send us your music.
+      </p>
+      <a
+        href="/contact?enquiry=Artist+Submission"
+        class="mt-6 inline-block rounded bg-brand-red px-7 py-4 font-semibold uppercase tracking-wide text-white shadow-glow transition hover:bg-brand-red-dark"
+      >
+        Submit Your Music
+      </a>
+    </div>
+  </section>
+</BaseLayout>

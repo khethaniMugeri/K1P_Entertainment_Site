@@ -1,0 +1,319 @@
+---
+// HeroVinyl.astro
+// -----------------------------------------------------------------------------
+// A tasteful, music-themed 3D ACCENT for the home hero: a slowly rotating vinyl
+// record with a red K1P label and a soft red rim glow. It is purely DECORATIVE —
+// it sits behind/beside the headline and never covers the text or buttons.
+//
+// How it stays safe, fast and accessible (all handled in the <script> below):
+//   • Decorative only: the whole layer is `aria-hidden` and `pointer-events:none`,
+//     so screen readers ignore it and it can NEVER block taps on the buttons.
+//   • Absolutely positioned (inset-0) so it adds NO layout shift (good CLS).
+//   • Three.js is loaded with a DYNAMIC import, so its ~150KB only downloads on
+//     desktops that actually run the effect — phones never pay for it.
+//   • Reduced motion: if the visitor asked their device to reduce motion, we show
+//     a STATIC CSS vinyl instead of animating.
+//   • Small screens: we skip 3D entirely and show the static CSS vinyl, so phones
+//     stay fast.
+//   • No WebGL: graceful fallback to the static CSS vinyl.
+//   • Only animates while the hero is ON SCREEN (IntersectionObserver pauses it
+//     when you scroll away), and the renderer pixelRatio is capped at 2.
+//
+// The page can turn this on/off with a single flag (see index.astro), so it's
+// easy to compare with/without.
+// -----------------------------------------------------------------------------
+---
+
+{/* The decorative layer. `aria-hidden` + `pointer-events-none` = invisible to
+    assistive tech and never intercepts clicks. `data-hero-vinyl` scopes the
+    script to this element. */}
+<div class="hero-vinyl" data-hero-vinyl aria-hidden="true">
+  {/* The WebGL canvas (hidden until we confirm 3D should run). */}
+  <canvas data-vinyl-canvas style="display:none"></canvas>
+
+  {/* The STATIC fallback vinyl (pure CSS, no JS) — shown on phones, when reduced
+      motion is on, or when WebGL is unavailable. Hidden until the script picks it. */}
+  <div data-vinyl-fallback class="vinyl-fallback" style="display:none"></div>
+</div>
+
+<style>
+  /* The layer fills the hero but sits BEHIND the text (the hero content uses a
+     higher z-index). It can't be interacted with. */
+  .hero-vinyl {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .hero-vinyl canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* ---- STATIC FALLBACK VINYL (CSS only) ----------------------------------
+     A flat record drawn with layered radial gradients: dark grooved disc + a
+     red #E10600 centre label + a small spindle hole, with a soft red glow. It
+     bleeds off the right edge so it reads as an accent, not a backdrop behind
+     the centred headline. */
+  .vinyl-fallback {
+    position: absolute;
+    top: 50%;
+    right: -6%;
+    transform: translateY(-50%) rotate(-12deg);
+    width: min(52vw, 380px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    /* layers (top to bottom): spindle hole · red label · grooves · disc base */
+    background:
+      radial-gradient(circle at 50% 50%, #000 0 2.5%, transparent 2.6%),
+      radial-gradient(circle at 50% 50%, transparent 0 24%, #0a0a0a 24% 25.5%, transparent 25.6%),
+      radial-gradient(circle at 50% 50%, #e10600 0 24%, transparent 24.1%),
+      repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.045) 0 1px, rgba(0, 0, 0, 0) 1px 4px),
+      radial-gradient(circle at 50% 50%, #1a1a1a 0 100%);
+    box-shadow: 0 0 70px rgba(225, 6, 0, 0.35);
+    opacity: 0.9;
+  }
+
+  /* Keep the static accent subtle and out of the way on small phones. */
+  @media (max-width: 640px) {
+    .vinyl-fallback {
+      width: min(60vw, 280px);
+      right: -14%;
+      opacity: 0.6;
+    }
+  }
+</style>
+
+<script>
+  // This runs in the browser. It decides whether to render the animated 3D vinyl
+  // or the static CSS fallback, then (if 3D) sets up and runs Three.js.
+
+  const layer = document.querySelector('[data-hero-vinyl]');
+  if (layer) {
+    const canvas = layer.querySelector('[data-vinyl-canvas]');
+    const fallback = layer.querySelector('[data-vinyl-fallback]');
+
+    // Helper: show the static CSS vinyl and stop here.
+    const showFallback = () => {
+      if (fallback) fallback.style.display = 'block';
+    };
+
+    // ---- DECIDE: should we run the 3D effect at all? ----
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isSmallScreen = window.matchMedia('(max-width: 767px)').matches;
+
+    // Quick WebGL support check.
+    const hasWebGL = (() => {
+      try {
+        const c = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+      } catch {
+        return false;
+      }
+    })();
+
+    const run3D = canvas && hasWebGL && !prefersReducedMotion && !isSmallScreen;
+
+    if (!run3D) {
+      // Phone, reduced motion, or no WebGL → show the static vinyl instead.
+      showFallback();
+    } else {
+      // Reveal the canvas and load Three.js ONLY now (dynamic import = its own
+      // chunk, downloaded only on devices that actually use it).
+      canvas.style.display = 'block';
+
+      import('three')
+        .then((THREE) => initVinyl(THREE))
+        .catch(() => {
+          // If Three.js fails to load for any reason, fall back gracefully.
+          canvas.style.display = 'none';
+          showFallback();
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // The 3D scene.
+    // -------------------------------------------------------------------------
+    function initVinyl(THREE) {
+      // --- Renderer: transparent background, capped pixelRatio (perf). ---
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping; // softer, more "premium" light
+      renderer.toneMappingExposure = 1.1;
+
+      const scene = new THREE.Scene();
+
+      // --- Camera ---
+      const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+      camera.position.set(0, 0, 7);
+
+      // --- The vinyl ---
+      // A `group` lets us TILT the record once (for an angled, on-a-turntable
+      // look) while the disc inside spins around its own axis.
+      const group = new THREE.Group();
+      group.rotation.x = -1.15; // tilt back ~66° so we see the label at an angle
+      group.rotation.z = -0.12; // a touch of lean for a natural, less rigid pose
+      scene.add(group);
+
+      // A thin cylinder = the disc. 80 radial segments keeps the rim round but
+      // it's still a very light, single mesh.
+      const geometry = new THREE.CylinderGeometry(2, 2, 0.06, 80);
+
+      // Bake the whole record face (grooves + red K1P label + spindle hole) into
+      // one canvas texture, applied to the top and bottom faces.
+      const faceTexture = makeVinylTexture(THREE, renderer);
+      const edgeMaterial = new THREE.MeshStandardMaterial({ color: 0x050505, metalness: 0.4, roughness: 0.6 });
+      const faceMaterial = new THREE.MeshStandardMaterial({ map: faceTexture, metalness: 0.35, roughness: 0.45 });
+      // CylinderGeometry material order is [side, top, bottom].
+      const disc = new THREE.Mesh(geometry, [edgeMaterial, faceMaterial, faceMaterial]);
+      group.add(disc);
+
+      // --- Lights: soft white key + warm fill, plus RED rim lights for the
+      //     premium glow that makes it feel classy, not toy-like. ---
+      scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+      const key = new THREE.DirectionalLight(0xffffff, 1.15);
+      key.position.set(4, 6, 5);
+      scene.add(key);
+
+      const redRim = new THREE.PointLight(0xff1a1a, 2.2, 25);
+      redRim.position.set(-5, 2, -2); // behind-left → glints red along the rim
+      scene.add(redRim);
+
+      const redFill = new THREE.PointLight(0xe10600, 1.2, 25);
+      redFill.position.set(5, -1, 4);
+      scene.add(redFill);
+
+      // --- Keep the record near the RIGHT edge at any width, and keep the canvas
+      //     buffer matched to the container size (no distortion / no layout shift). ---
+      function layout() {
+        const w = layer.clientWidth;
+        const h = layer.clientHeight;
+        if (!w || !h) return;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        // Place the disc near the right edge based on what the camera can see.
+        const halfH = Math.tan((camera.fov * Math.PI) / 360) * camera.position.z;
+        const halfW = halfH * camera.aspect;
+        group.position.x = halfW * 0.74;
+      }
+      layout();
+      window.addEventListener('resize', layout);
+
+      // --- Optional, very subtle mouse tilt (desktop pointers only). ---
+      const finePointer = window.matchMedia('(pointer: fine)').matches;
+      const baseX = group.rotation.x;
+      const baseZ = group.rotation.z;
+      let targetX = baseX;
+      let targetZ = baseZ;
+      if (finePointer) {
+        window.addEventListener('pointermove', (e) => {
+          const nx = (e.clientX / window.innerWidth) * 2 - 1; // -1 … 1
+          const ny = (e.clientY / window.innerHeight) * 2 - 1;
+          targetX = baseX + ny * 0.12; // tiny range so it stays tasteful
+          targetZ = baseZ + nx * 0.12;
+        });
+      }
+
+      // --- Animate ONLY while the hero is visible (saves battery/CPU). ---
+      let running = false;
+      let frame = 0;
+
+      function renderFrame() {
+        if (!running) return;
+        // Gentle continuous spin (~one turn every ~24s — slow and classy).
+        disc.rotation.y += 0.0045;
+        // Ease the group toward the mouse-tilt target (smooth, not jumpy).
+        group.rotation.x += (targetX - group.rotation.x) * 0.05;
+        group.rotation.z += (targetZ - group.rotation.z) * 0.05;
+        renderer.render(scene, camera);
+        frame = requestAnimationFrame(renderFrame);
+      }
+
+      function start() {
+        if (running) return;
+        running = true;
+        frame = requestAnimationFrame(renderFrame);
+      }
+      function stop() {
+        running = false;
+        cancelAnimationFrame(frame);
+      }
+
+      // Pause when the hero scrolls out of view, resume when it returns.
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) start();
+            else stop();
+          }
+        },
+        { threshold: 0.05 }
+      );
+      io.observe(layer);
+
+      // Also pause if the browser tab is hidden.
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stop();
+        else start();
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // Draw the record face (grooves + red K1P label + spindle hole) onto a 2D
+    // canvas, then hand it to Three.js as a texture. One texture = the whole look.
+    // -------------------------------------------------------------------------
+    function makeVinylTexture(THREE, renderer) {
+      const size = 1024;
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const cx = size / 2;
+      const cy = size / 2;
+      const R = size / 2;
+
+      // Base black disc.
+      ctx.fillStyle = '#0a0a0a';
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Fine grooves: many faint concentric rings (the classic vinyl sheen).
+      for (let r = R * 0.3; r < R * 0.99; r += 3) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,255,255,${0.02 + Math.random() * 0.03})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Red centre label (K1P brand red).
+      ctx.fillStyle = '#e10600';
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.27, 0, Math.PI * 2);
+      ctx.fill();
+
+      // "K1P" on the label.
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${R * 0.17}px Arial, Helvetica, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('K1P', cx, cy);
+
+      // Spindle hole in the very centre.
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.025, 0, Math.PI * 2);
+      ctx.fill();
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); // crisp at an angle
+      return tex;
+    }
+  }
+</script>

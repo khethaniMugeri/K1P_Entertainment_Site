@@ -1,0 +1,35 @@
+---
+// MerchCard.astro
+// -----------------------------------------------------------------------------
+// One product price card for the Merch page. It shows the product NAME and PRICE
+// and a green "Order on WhatsApp" button that opens a chat to K1P with a message
+// already typed in, naming this exact product and price. There is NO online
+// cart or checkout — every order is placed over WhatsApp.
+//
+// Built to sit in a responsive grid of EQUAL-HEIGHT cards: it uses
+// `h-full` + `flex-col`, and `mt-auto` pushes the button to the bottom, so cards
+// in the same row line up no matter the length of the product name.
+// -----------------------------------------------------------------------------
+
+import WhatsAppButton from './WhatsAppButton.astro';
+
+const { name, price } = Astro.props;
+
+// The message pre-filled into WhatsApp, e.g.
+//   "Hi K1P, I'd like to order the K1P Hoodie (R500)."
+const orderMessage = `Hi K1P, I'd like to order the K1P ${name} (R${price}).`;
+---
+
+<article class="flex h-full flex-col rounded-xl border border-white/10 bg-surface p-6 transition duration-200 hover:-translate-y-1 hover:border-brand-red/60 hover:shadow-glow">
+  {/* Product name (the bold display font + uppercase come from the site styles). */}
+  <h3 class="text-xl text-white sm:text-2xl">{name}</h3>
+
+  {/* Price — big and red. `tabular-nums` keeps the digits evenly spaced. */}
+  <p class="mt-2 text-3xl font-semibold tabular-nums text-brand-red">R{price}</p>
+
+  {/* CTA pinned to the bottom (`mt-auto`) so buttons line up across cards.
+      Full-width green WhatsApp button = an easy tap target on phones. */}
+  <div class="mt-auto pt-6">
+    <WhatsAppButton message={orderMessage} label="Order on WhatsApp" block={true} />
+  </div>
+</article>

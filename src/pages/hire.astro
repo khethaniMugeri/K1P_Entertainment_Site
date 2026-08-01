@@ -1,0 +1,262 @@
+---
+// hire.astro: the EQUIPMENT HIRE PAGE ("/hire")
+// -----------------------------------------------------------------------------
+// Shows everything K1P rents out, as a responsive grid of equipment cards.
+// The list of items + the event use-cases come from src/data/equipment.js, so
+// the owner edits content there without touching this layout.
+//
+// Structure: page intro → "we set up for these events" chips → equipment grid
+// → a short note explaining the pricing approach.
+// -----------------------------------------------------------------------------
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/Card.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { site } from '../data/site.js';
+import { equipment, useCases, pricing } from '../data/equipment.js';
+
+// Pull the three price blocks out of the pricing data for shorter names below.
+const { decksHire, decksLessons, studio } = pricing;
+
+// SEO: "Service" structured-data describing the equipment-hire offering, tied
+// back to the K1P business as the provider.
+const hireServiceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType: 'Event equipment hire',
+  name: 'Sound System, Stage, Lighting, Decks & Projector Hire',
+  description: `Hire sound systems, stage & lighting, XDJ decks, microphones and projectors for events in ${site.city}, ${site.region}.`,
+  areaServed: `${site.city}, ${site.region}, South Africa`,
+  provider: { '@type': 'LocalBusiness', name: site.name, telephone: site.phoneLink },
+};
+---
+
+<BaseLayout
+  title="Sound System, Stage, Decks & Projector Hire | Thohoyandou, Limpopo | K1P"
+  description="Hire sound systems, stage & lighting, XDJ decks, projectors, microphones and event equipment in Thohoyandou, Limpopo from K1P Entertainment. Request a quote on WhatsApp."
+  structuredData={[hireServiceSchema]}
+>
+  {/* ===================================================================== */}
+  {/* INTRO                                                                  */}
+  {/* ===================================================================== */}
+  <section class="relative overflow-hidden">
+    {/* Soft red stage-glow behind the heading. */}
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute left-1/2 top-0 h-60 w-60 -translate-x-1/2 rounded-full bg-brand-red/20 blur-3xl"
+    >
+    </div>
+
+    <div class="container-page relative py-16 text-center sm:py-20">
+      <p class="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-brand-red sm:text-sm sm:tracking-[0.3em]">
+        Events & Equipment
+      </p>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl">Equipment Hire</h1>
+      {/* Intro works in the core "... hire" keywords + location naturally. */}
+      <p class="mx-auto mt-5 max-w-2xl text-base text-grey sm:text-lg">
+        Sound system hire, stage and lighting hire, XDJ decks and projectors for
+        any event in Thohoyandou, Limpopo. Tell us about your event and we will
+        send you a quote.
+      </p>
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* USE-CASE CHIPS, the kinds of events we set up for.                    */}
+  {/* `flex-wrap` lets the chips flow onto as many rows as the screen needs. */}
+  {/* ===================================================================== */}
+  <section class="container-page pb-4">
+    <h2 class="sr-only">Events we set up for</h2>
+    <ul class="flex flex-wrap justify-center gap-2 sm:gap-3">
+      {
+        useCases.map((useCase) => (
+          <li class="rounded-full border border-white/15 bg-surface px-4 py-2 text-sm text-grey">
+            {useCase}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* EQUIPMENT GRID, 1 column on phones → 2 on tablets → 3 on desktop.     */}
+  {/* ===================================================================== */}
+  <section class="container-page py-12 sm:py-16">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+      {
+        equipment.map((item) => (
+          // Images fill the card edge-to-edge (no padding/border/gap), cropped
+          // with object-position center + rounded top corners — the SAME Card and
+          // styling as the home "What We Do" cards, so the sections match.
+          // Most items use the Card default "cover"; a few tall/portrait product
+          // photos (mics, mic stands) opt into `imageFit: 'contain'` in the data
+          // so the whole item stays visible instead of being cropped.
+          <Card
+            title={item.name}
+            text={item.description}
+            image={item.image}
+            imageAlt={`${item.name} for hire in Thohoyandou, Limpopo — K1P Entertainment`}
+            imageHint={item.imageHint}
+            imageFit={item.imageFit}
+            price={item.price}
+            priceNote={item.priceNote}
+            whatsappMessage={`Hi K1P Entertainment, I'd like to hire the ${item.name} for my event. Please can you send me a quote?`}
+            buttonLabel="Request a Quote"
+            buttonHref={`/contact?enquiry=${encodeURIComponent(item.name)}`}
+          />
+        ))
+      }
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* PRICE LIST, the fixed rates from the flyers (decks, lessons, studio). */}
+  {/* Each block is a small table built from the `pricing` data file.       */}
+  {/* 1 column on phones, 2 from `md` up, 3 from `lg` up.                   */}
+  {/* ===================================================================== */}
+  <section class="container-page py-4">
+    <div class="mb-8 text-center sm:mb-10">
+      <h2 class="text-3xl sm:text-4xl md:text-5xl">Price List</h2>
+      <p class="mx-auto mt-3 max-w-xl text-grey">
+        Set rates for decks, lessons and the studio. Everything else is priced
+        per event.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+      {/* ---- Decks for hire (simple label + price rows) ---- */}
+      <div class="flex h-full flex-col rounded-xl border border-white/10 bg-surface p-6">
+        <h3 class="text-xl text-white">{decksHire.title}</h3>
+        <ul class="mt-4 space-y-2 text-sm">
+          {
+            decksHire.rows.map((row) => (
+              <li class="flex items-baseline justify-between gap-3 border-b border-white/5 pb-2">
+                <span class="text-grey">{row.label}</span>
+                <span class="shrink-0 font-semibold tabular-nums text-brand-red">{row.price}</span>
+              </li>
+            ))
+          }
+        </ul>
+        {/* WhatsApp primary, email quote secondary. `mt-auto` pins the buttons
+            to the bottom so cards in this row line up. */}
+        <div class="mt-auto flex flex-col gap-2 pt-6">
+          <WhatsAppButton
+            message="Hi K1P Entertainment, I'd like to hire DJ decks for a gig. Please can you send me a quote?"
+            label="Book on WhatsApp"
+            block={true}
+          />
+          <a
+            href={`/contact?enquiry=${encodeURIComponent(decksHire.enquiry)}`}
+            class="block w-full rounded border border-white/25 px-5 py-3 text-center font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+          >
+            Book Decks By Email
+          </a>
+        </div>
+      </div>
+
+      {/* ---- Decks lessons (rows + a note about group rates) ---- */}
+      <div class="flex h-full flex-col rounded-xl border border-white/10 bg-surface p-6">
+        <h3 class="text-xl text-white">{decksLessons.title}</h3>
+        <ul class="mt-4 space-y-2 text-sm">
+          {
+            decksLessons.rows.map((row) => (
+              <li class="flex items-baseline justify-between gap-3 border-b border-white/5 pb-2">
+                <span class="text-grey">{row.label}</span>
+                <span class="shrink-0 font-semibold tabular-nums text-brand-red">{row.price}</span>
+              </li>
+            ))
+          }
+        </ul>
+        {decksLessons.note && <p class="mt-3 text-xs text-grey">{decksLessons.note}</p>}
+        {/* WhatsApp primary, email quote secondary. `mt-auto` keeps both pinned
+            to the bottom so the three price cards line up. */}
+        <div class="mt-auto flex flex-col gap-2 pt-6">
+          <WhatsAppButton
+            message="Hi K1P Entertainment, I'd like to book DJ-ing lessons. Please can you tell me more?"
+            label="Book on WhatsApp"
+            block={true}
+          />
+          <a
+            href={`/contact?enquiry=${encodeURIComponent(decksLessons.enquiry)}`}
+            class="block w-full rounded border border-white/25 px-5 py-3 text-center font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+          >
+            Book Lessons By Email
+          </a>
+        </div>
+      </div>
+
+      {/* ---- Studio (grouped sub-sections, each with its own heading) ----
+           On large screens this wider card spans both remaining columns so the
+           sub-sections have room to breathe. */}
+      <div class="flex h-full flex-col rounded-xl border border-white/10 bg-surface p-6 md:col-span-2 lg:col-span-1">
+        <h3 class="text-xl text-white">{studio.title}</h3>
+        <div class="mt-4 space-y-4">
+          {
+            studio.groups.map((group) => (
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-grey/80">
+                  {group.heading}
+                </p>
+                <ul class="mt-2 space-y-2 text-sm">
+                  {group.rows.map((row) => (
+                    <li class="flex items-baseline justify-between gap-3 border-b border-white/5 pb-2">
+                      <span class="text-grey">{row.label}</span>
+                      <span class="shrink-0 font-semibold tabular-nums text-brand-red">{row.price}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+        {/* WhatsApp primary, email quote secondary. */}
+        <div class="mt-auto flex flex-col gap-2 pt-6">
+          <WhatsAppButton
+            message="Hi K1P Entertainment, I'd like to book studio time (recording / mixing / mastering / beats). Please can you tell me more?"
+            label="Book on WhatsApp"
+            block={true}
+          />
+          <a
+            href={`/contact?enquiry=${encodeURIComponent(studio.enquiry)}`}
+            class="block w-full rounded border border-white/25 px-5 py-3 text-center font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+          >
+            Book Studio By Email
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {/* Full setups have no fixed price, so we point people to a quote. */}
+    <p class="mx-auto mt-8 max-w-2xl text-center text-sm text-grey">
+      Full sound, stage and truss combos are priced per event. From / request a
+      quote.
+    </p>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* PRICING NOTE, explains why some items show a price and others don't.  */}
+  {/* ===================================================================== */}
+  <section class="container-page pb-16">
+    <div class="mx-auto max-w-2xl rounded-xl border border-white/10 bg-surface p-6 text-center">
+      <h2 class="text-2xl text-white">How Pricing Works</h2>
+      <p class="mt-3 text-sm text-grey">
+        DJ decks and studio time have set rates shown on the cards above. Full
+        sound, stage, truss and lighting setups are priced per event. The cost
+        depends on your venue, your audience size and how long you need it. The
+        fastest way to get a price is to message us on
+        <span class="text-white">WhatsApp</span>.
+      </p>
+      {/* WhatsApp primary, email quote secondary, centred and wrapping on
+          phones. */}
+      <div class="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+        <WhatsAppButton message="Hi K1P Entertainment, I'd like a quote for sound / stage / lighting hire for my event." />
+        <a
+          href="/contact"
+          class="inline-block rounded border border-white/30 px-7 py-4 text-center font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+        >
+          Get A Quote By Email
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

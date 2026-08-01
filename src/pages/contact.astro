@@ -1,0 +1,171 @@
+---
+// contact.astro: the CONTACT PAGE ("/contact")
+// -----------------------------------------------------------------------------
+// Two halves: on the left, the ways to reach K1P (phone/WhatsApp, email,
+// Instagram, location); on the right, the reusable quote/enquiry form.
+// On phones these stack into one column; from `lg` up they sit side by side.
+//
+// Quote buttons elsewhere on the site link here with ?enquiry=... so the form's
+// "What are you enquiring about?" field gets pre-filled automatically.
+// -----------------------------------------------------------------------------
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import QuoteForm from '../components/QuoteForm.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { site } from '../data/site.js';
+---
+
+<BaseLayout
+  title="Contact K1P Entertainment | Thohoyandou, Limpopo | Call or WhatsApp"
+  description="Contact K1P Entertainment in Thohoyandou, Limpopo. Call or WhatsApp 063 687 9489, email us, or send an enquiry for recording, equipment hire and event bookings."
+>
+  {/* ===================================================================== */}
+  {/* INTRO                                                                  */}
+  {/* ===================================================================== */}
+  <section class="relative overflow-hidden">
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute left-1/2 top-0 h-60 w-60 -translate-x-1/2 rounded-full bg-brand-red/20 blur-3xl"
+    >
+    </div>
+    <div class="container-page relative py-16 text-center sm:py-20">
+      <p class="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-brand-red sm:text-sm sm:tracking-[0.3em]">
+        Let’s Talk
+      </p>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl">Get In Touch</h1>
+      <p class="mx-auto mt-5 max-w-2xl text-base text-grey sm:text-lg">
+        Booking an event, hiring gear or recording in the studio? The quickest
+        way to reach us is on WhatsApp, or send the form below and we will reply
+        soon.
+      </p>
+
+      {/* Calls-to-action. WhatsApp is our PRIMARY method, so the green button
+          leads. "Book Studio" jumps to the form with the enquiry pre-filled,
+          and "Get a Quote" just jumps to the form. All are 44px+ tall for easy
+          tapping; the row wraps on phones. */}
+      <div class="mx-auto mt-8 flex max-w-md flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+        <WhatsAppButton message="Hi K1P Entertainment 👋 I'd like to make a booking / enquiry." />
+        <a
+          href="/contact?enquiry=Studio+Booking#quote"
+          class="rounded bg-brand-red px-7 py-4 text-center font-semibold uppercase tracking-wide text-white shadow-glow transition hover:bg-brand-red-dark"
+        >
+          Book Studio
+        </a>
+        <a
+          href="#quote"
+          class="rounded border border-white/30 px-7 py-4 text-center font-semibold uppercase tracking-wide text-white transition hover:border-white hover:bg-white/5"
+        >
+          Get a Quote
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* DETAILS + FORM                                                         */}
+  {/* 1 column on phones/tablet → 2 columns from `lg` up.                    */}
+  {/* `items-start` keeps both columns aligned to the top.                   */}
+  {/* ===================================================================== */}
+  <section class="container-page grid grid-cols-1 items-start gap-8 pb-16 lg:grid-cols-2 lg:gap-12">
+    {/* ---- LEFT: contact details ---- */}
+    <div class="space-y-6">
+      <div class="rounded-2xl border border-white/10 bg-surface p-6 sm:p-8">
+        <h2 class="text-2xl text-white">Contact Details</h2>
+
+        {/* PRIMARY booking action: chat to K1P on WhatsApp in one tap. */}
+        <WhatsAppButton
+          message="Hi K1P Entertainment 👋 I'd like to make a booking / enquiry."
+          block={true}
+          class="mt-5"
+        />
+
+        <ul class="mt-5 space-y-4 text-grey">
+          {/* Phone / WhatsApp */}
+          <li>
+            <a
+              href={`tel:${site.phoneLink}`}
+              class="group inline-flex items-start gap-3 transition hover:text-white"
+            >
+              <svg class="mt-0.5 shrink-0 text-brand-red" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+              <span>
+                <span class="block text-sm uppercase tracking-wide text-grey/70">Call us</span>
+                <span class="text-white">{site.phone}</span>
+              </span>
+            </a>
+          </li>
+
+          {/* Email */}
+          <li>
+            <a
+              href={`mailto:${site.email}`}
+              class="group inline-flex items-start gap-3 transition hover:text-white"
+            >
+              <svg class="mt-0.5 shrink-0 text-brand-red" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-10 6L2 7" />
+              </svg>
+              <span>
+                <span class="block text-sm uppercase tracking-wide text-grey/70">Email</span>
+                <span class="break-all text-white">{site.email}</span>
+              </span>
+            </a>
+          </li>
+
+          {/* Instagram */}
+          <li>
+            <a
+              href={site.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group inline-flex items-start gap-3 transition hover:text-white"
+            >
+              <svg class="mt-0.5 shrink-0 text-brand-red" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg>
+              <span>
+                <span class="block text-sm uppercase tracking-wide text-grey/70">Instagram</span>
+                <span class="text-white">{site.instagramHandle}</span>
+              </span>
+            </a>
+          </li>
+
+          {/* Location */}
+          <li>
+            <div class="inline-flex items-start gap-3">
+              <svg class="mt-0.5 shrink-0 text-brand-red" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span>
+                <span class="block text-sm uppercase tracking-wide text-grey/70">Based in</span>
+                <span class="text-white">Venda, Limpopo, South Africa</span>
+              </span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      {/* Studio booking nudge. */}
+      <div class="rounded-2xl border border-white/10 bg-surface p-6 sm:p-8">
+        <h2 class="text-2xl text-white">Studio Bookings</h2>
+        <p class="mt-3 text-sm text-grey">
+          Recording, mixing, mastering or custom beats? Use the form and mention
+          “studio”. We will set up a time and a package for you.
+        </p>
+      </div>
+    </div>
+
+    {/* ---- RIGHT: the reusable quote/enquiry form ---- */}
+    {/* `id="quote"` lets other pages link straight to it (/contact#quote). */}
+    <div id="quote" class="scroll-mt-24">
+      <QuoteForm
+        heading="Send Us A Message"
+        intro="Fill in your details and we’ll reply by phone or email. Fields marked * are required."
+      />
+    </div>
+  </section>
+</BaseLayout>
