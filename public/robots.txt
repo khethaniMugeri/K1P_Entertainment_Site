@@ -1,0 +1,9 @@
+# robots.txt
+# Tells search engine crawlers they may index the whole site, and where to find
+# the sitemap (which lists every page). The sitemap is generated automatically
+# by the @astrojs/sitemap integration at build time.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://k1pentertainment.co.za/sitemap-index.xml

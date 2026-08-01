@@ -1,0 +1,18 @@
+# _headers  (for NETLIFY)
+# -----------------------------------------------------------------------------
+# Netlify reads this file and adds these HTTP security headers to every page.
+# (If you deploy on Vercel instead, the same rules live in vercel.json at the
+#  project root. You only need the one that matches your host.)
+#
+# HTTPS is automatic on Netlify/Vercel. The Strict-Transport-Security header
+# below tells browsers to ALWAYS use HTTPS for this site from now on, and
+# "upgrade-insecure-requests" in the CSP upgrades any http link to https.
+# -----------------------------------------------------------------------------
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: geolocation=(), camera=(), microphone=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: https://i.ytimg.com https://img.youtube.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; upgrade-insecure-requests
