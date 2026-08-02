@@ -1,15 +1,9 @@
 {
-  "events": [
-    {
-      "title": "K1P Talent Show 2026",
-      "date": "2026-07-05T18:00:00+02:00",
-      "venue": "Monate City Lifestyle Village, Tshilungoma, Thohoyandou",
-      "address": "Lufule 2, 236 R524, Tshilungoma, Thohoyandou, 0950",
-      "postalCode": "0950",
-      "description": "Singers, DJs and performers compete on one stage. Come watch the next big sound.",
-      "ctaLabel": "Register / Notify Me",
-      "ctaLink": "/contact?enquiry=Talent+Show+2026",
-      "isHeadline": true
-    }
-  ]
+  "title": "Winner Voting Coming Soon",
+  "date": "2026-08-15",
+  "venue": "",
+  "description": "The talent show was a hit! Voting for the winner opens soon - stay tuned.",
+  "ctaLabel": "Stay Updated",
+  "ctaLink": "https://wa.me/27636879489",
+  "isHeadline": true
 }
