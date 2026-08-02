@@ -1,9 +1,11 @@
-{
-  "title": "Winner Voting Coming Soon",
-  "date": "2026-08-15",
-  "venue": "",
-  "description": "The talent show was a hit! Voting for the winner opens soon - stay tuned.",
-  "ctaLabel": "Stay Updated",
-  "ctaLink": "https://wa.me/27636879489",
-  "isHeadline": true
-}
+[
+  {
+    "title": "Winner Voting Coming Soon",
+    "date": "2026-08-15",
+    "venue": "",
+    "description": "The talent show was a hit! Voting for the winner opens soon - stay tuned.",
+    "ctaLabel": "Stay Updated",
+    "ctaLink": "https://wa.me/27636879489",
+    "isHeadline": true
+  }
+]
