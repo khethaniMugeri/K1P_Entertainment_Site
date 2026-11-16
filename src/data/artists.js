@@ -1,104 +1,35 @@
 // artists.js
 // -----------------------------------------------------------------------------
-// The artists and DJs signed to / managed by K1P, shown as rich profile cards on
-// the Artists page. This is plain DATA so you can edit the roster here without
-// touching layout code. The Artists page loops over this array and renders one
-// <ArtistCard> per person.
+// The artists and DJs signed to / managed by K1P, shown as profile cards on
+// the Artists page. This is plain DATA, so you can edit the roster here
+// without touching layout code. The Artists page loops over this array and
+// renders one <ArtistCard> per person, in the order listed below.
 //
-// Each DJ has:
-//   stageName       – the name shown big on the card (their DJ/stage name).
-//   realName        – their actual name, shown under the stage name.
-//   location        – where they are based.
-//   image           – photo path under public/images/artists/. If the file
+// Each artist has:
+//   stageName       - the name shown big on the card.
+//   realName        - their actual name, shown under the stage name.
+//   location        - where they are based.
+//   image           - photo path under public/images/artists/. If the file
 //                     isn't there yet, the card shows a labelled placeholder
 //                     telling you exactly which filename to drop in.
-//   genres          – list of genre "chips" shown under the name.
-//   bio             – an ARRAY of paragraphs (kept word-for-word as supplied).
-//                     The first paragraph always shows; the rest reveal behind a
+//   genres          - list of genre "chips" shown under the name.
+//   bio             - an ARRAY of paragraphs, kept word for word as supplied.
+//                     The first paragraph always shows. The rest sit behind a
 //                     "Read more" button so long bios don't overwhelm phones.
-//   socials         – list of { platform, label, href } social links. `platform`
-//                     must be one of: 'facebook', 'instagram', 'tiktok' (those
-//                     have icons in ArtistCard).
-//   mixes           – list of YouTube VIDEO IDs (the part after youtu.be/ or
+//   socials         - list of { platform, label, href } social links.
+//   mixes           - list of YouTube VIDEO IDs (the part after youtu.be/ or
 //                     watch?v=). Each becomes a clickable thumbnail.
-//   whatsappMessage – the message pre-filled when someone taps "Book on
-//                     WhatsApp" (already includes the DJ's name).
+//   whatsappMessage - the message pre-filled when someone taps "Book on
+//                     WhatsApp".
 //
-// To ADD a DJ: copy a block, change the values, give them the next photo name.
-// To REORDER: move the blocks up or down (they render top-to-bottom).
+// To ADD an artist: copy a whole block, change the values, add a photo.
+// To REORDER: move whole blocks up or down. They render top to bottom.
+// Every block must end with "}," (a closing brace and a comma).
 // -----------------------------------------------------------------------------
 
 export const artists = [
   // ===========================================================================
-  // 1) PRISE TAG
-  // ===========================================================================
-  {
-    stageName: 'Prise Tag',
-    realName: 'Surprise Mabilu',
-    location: 'Thohoyandou, Limpopo, South Africa',
-    image: '/images/artists/prise-tag.jpg',
-    genres: ['Amapiano', 'House Music', '3-Step', 'Hip-Hop'],
-    bio: [
-      `Surprise Mabilu popularly known as Prise Tag is a versatile award-winning DJ based in Thohoyandou, Limpopo, South Africa. He is well known for bringing high energy sets and bringing his outstanding stage presence. His signature sound is Amapiano, but also blends in Deep House, House Music, 3-Step and Hip-Hop, making the musical experience electrifying. From Soulful grooves to crowd-shaking party anthems.`,
-      `Known for his high-energy sets, Prise Tag's Amapiano Exclusives and preference in House Music have made him a rising star in the South African Nightlife and Entertainment scene. He has great abilities of crowd reading and delivering unforgettable sets. That earned him high-profile bookings and club residences. He has also gotten an opportunity to get an interview from Phalaphala FM which has hundreds of thousands of listeners.`,
-      `Prise Tag has been on line-ups at prominent events and venues including but not limited to, Infinity Lounge (Cape Town), Savage Lounge (Cape Town), Dreamclub (Thohoyandou), NewsCafe (Thohoyandou), Perere (Sandton), Zouk (Melville) and many others. His rapidly growing fanbase and unwavering passion for music has made him continue to push boundaries and elevate every stage he steps on to, regardless of the size of the venue.`,
-    ],
-    socials: [
-      { platform: 'facebook', label: 'Prise Tag', href: 'https://www.facebook.com/search/top?q=Prise%20Tag' },
-      { platform: 'instagram', label: 'prise_tag1', href: 'https://instagram.com/prise_tag1' },
-    ],
-    mixes: ['6ARnj8uP-Qs', '5M414jVQAWI', '0DmSC--meLU'],
-    whatsappMessage:
-      "Hi K1P Entertainment, I'd like to book Prise Tag for an event. Please can you share availability and pricing?",
-  },
-
-  // ===========================================================================
-  // 2) G-32
-  // ===========================================================================
-  {
-    stageName: 'G-32',
-    realName: 'Gundo Nenngwekhulu',
-    location: 'Thohoyandou, Limpopo, South Africa',
-    image: '/images/artists/g-32.jpg',
-    genres: ['Amapiano', 'Deep House'],
-    bio: [
-      `Gundo Nenngwekhulu popularly known as G-32 is a dynamic DJ based in Thohoyandou, Limpopo, South Africa. He is well-known for his versatility within House Music. G-32 brings together Soulful grooves, Deep Rhythms, and energetic drops that connect with every crowd.`,
-      `G-32 has dominated stages at venues like Dreamclub (Thohoyandou), Dar Es Salaam (Tshikhudini), Vhulelu (Thohoyandou), Migeroni (Thohoyandou), Ditike Lifestyle (Thohoyandou) and many more.`,
-      `G-32 offers seamless blends, raw energy, and an unforgettable vibe. To him it is not just about playing tracks, it's about creating moments that last beyond the night.`,
-    ],
-    socials: [
-      { platform: 'instagram', label: 'g_32.official', href: 'https://instagram.com/g_32.official' },
-      { platform: 'tiktok', label: 'g_32.official', href: 'https://www.tiktok.com/@g_32.official' },
-    ],
-    mixes: ['HEsdQ8yfwEU', 'C0z9qUtOd78', 'M-nT3XBuAbA'],
-    whatsappMessage:
-      "Hi K1P Entertainment, I'd like to book G-32 for an event. Please can you share availability and pricing?",
-  },
-
-  // ===========================================================================
-  // 3) DJ TECHTONIC
-  // ===========================================================================
-  {
-    stageName: 'DJ Techtonic',
-    realName: 'Tendani Ndwambi',
-    location: 'Thohoyandou, Limpopo, South Africa',
-    image: '/images/artists/dj-techtonic.jpg',
-    genres: ['Amapiano', 'Afro House', '3-Step'],
-    bio: [
-      `Tendani Ndwambi commonly known as DJ Techtonic is an Amapiano DJ based in Thohoyandou, Limpopo, South Africa. Music has always been a part of DJ Techtonic's life from a young age but only started being a Disk Jockey in 2023. Since then, he has been on a mission to deliver vibrant and good energy to each set he plays.`,
-      `DJ Techtonic has had the pleasure to deliver sets at prominent venues like Dreamclub (Thohoyandou), Vhulelu (Thohoyandou), Ditike Lifestyle (Thohoyandou), just to name a few. His sound is heavily inspired by industry leading pioneers like Kabza De Small, MDU aka TRP, and many more. DJ Techtonic delivers soulful melodies, percussive grooves and deep log drums to create an experience that connects people on the dancefloor. DJ Techtonic is focused on taking his sound to new places and bigger platforms, whether it is a lifestyle event, Night Club or a Festival.`,
-    ],
-    socials: [
-      { platform: 'facebook', label: 'djtechtonic', href: 'https://www.facebook.com/djtechtonic' },
-      { platform: 'instagram', label: 'djtechtonic_', href: 'https://instagram.com/djtechtonic_' },
-    ],
-    mixes: ['wStm5QCJGW0', 'LjtqfFBGddU'],
-    whatsappMessage:
-      "Hi K1P Entertainment, I'd like to book DJ Techtonic for an event. Please can you share availability and pricing?",
-  },
-
-  // ===========================================================================
-  // 4) PROVRO
+  // 1) PROVRO (moved to the top)
   // ===========================================================================
   {
     stageName: 'ProVro',
@@ -126,11 +57,82 @@ export const artists = [
   },
 
   // ===========================================================================
+  // 2) G-32
+  // ===========================================================================
+  {
+    stageName: 'G-32',
+    realName: 'Gundo Nenngwekhulu',
+    location: 'Thohoyandou, Limpopo, South Africa',
+    image: '/images/artists/g-32.jpg',
+    genres: ['Amapiano', 'Deep House'],
+    bio: [
+      `Gundo Nenngwekhulu popularly known as G-32 is a dynamic DJ based in Thohoyandou, Limpopo, South Africa. He is well-known for his versatility within House Music. G-32 brings together Soulful grooves, Deep Rhythms, and energetic drops that connect with every crowd.`,
+      `G-32 has dominated stages at venues like Dreamclub (Thohoyandou), Dar Es Salaam (Tshikhudini), Vhulelu (Thohoyandou), Migeroni (Thohoyandou), Ditike Lifestyle (Thohoyandou) and many more.`,
+      `G-32 offers seamless blends, raw energy, and an unforgettable vibe. To him it is not just about playing tracks, it's about creating moments that last beyond the night.`,
+    ],
+    socials: [
+      { platform: 'instagram', label: 'g_32.official', href: 'https://instagram.com/g_32.official' },
+      { platform: 'tiktok', label: 'g_32.official', href: 'https://www.tiktok.com/@g_32.official' },
+    ],
+    mixes: ['HEsdQ8yfwEU', 'C0z9qUtOd78', 'M-nT3XBuAbA'],
+    whatsappMessage:
+      "Hi K1P Entertainment, I'd like to book G-32 for an event. Please can you share availability and pricing?",
+  },
+
+  // ===========================================================================
+  // 3) PANDA (NEW, placed in the middle)
+  // ===========================================================================
+  {
+    stageName: 'Panda',
+    realName: 'Mashudu Junior Masala',
+    location: 'Thohoyandou, Limpopo, South Africa',
+    // Photo file lives in public/images/artists/panda.jpg
+    image: '/images/artists/panda.jpg',
+    genres: ['Amapiano', 'Lekompo', '3-Step/Afro', 'Hip Hop', 'R&B', 'Deep House'],
+    bio: [
+      `Mashudu Junior Masala, popularly known as Panda, is a dynamic and versatile DJ based in Thohoyandou, Limpopo, South Africa.`,
+      `His journey only started in 2025, but he is already a rising star in the entertainment industry. Known for his high energy, smooth transitions, and experimental sets, PANDA is a versatile DJ who mainly plays Amapiano and Lekompo, while blending in sounds like 3-Step/Afro, Hip Hop, R&B, and Deep House. He prides himself on reading the crowd and giving them an unforgettable experience.`,
+      `PANDA has performed on multiple stages, including UNIVEN Ground 1 Bash, Phalaphala FM Royal Heritage Festival activations, Tshilalandoima, Snap Sundays, Gastronomy, and most clubs in Thohoyandou.`,
+    ],
+    // Links cleaned of tracking bits (the ?_r=1 and ?si= parts)
+    socials: [
+      { platform: 'instagram', label: 'panda_youngking', href: 'https://instagram.com/panda_youngking' },
+      { platform: 'tiktok', label: 'panda_youngking', href: 'https://www.tiktok.com/@panda_youngking' },
+    ],
+    // YouTube video ID taken from https://youtu.be/LUlLSy53cg8
+    mixes: ['LUlLSy53cg8'],
+    whatsappMessage:
+      "Hi K1P Entertainment, I'd like to book Panda for an event. Please can you share availability and pricing?",
+  },
+
+  // ===========================================================================
+  // 4) DJ TECHTONIC
+  // ===========================================================================
+  {
+    stageName: 'DJ Techtonic',
+    realName: 'Tendani Ndwambi',
+    location: 'Thohoyandou, Limpopo, South Africa',
+    image: '/images/artists/dj-techtonic.jpg',
+    genres: ['Amapiano', 'Afro House', '3-Step'],
+    bio: [
+      `Tendani Ndwambi commonly known as DJ Techtonic is an Amapiano DJ based in Thohoyandou, Limpopo, South Africa. Music has always been a part of DJ Techtonic's life from a young age but only started being a Disk Jockey in 2023. Since then, he has been on a mission to deliver vibrant and good energy to each set he plays.`,
+      `DJ Techtonic has had the pleasure to deliver sets at prominent venues like Dreamclub (Thohoyandou), Vhulelu (Thohoyandou), Ditike Lifestyle (Thohoyandou), just to name a few. His sound is heavily inspired by industry leading pioneers like Kabza De Small, MDU aka TRP, and many more. DJ Techtonic delivers soulful melodies, percussive grooves and deep log drums to create an experience that connects people on the dancefloor. DJ Techtonic is focused on taking his sound to new places and bigger platforms, whether it is a lifestyle event, Night Club or a Festival.`,
+    ],
+    socials: [
+      { platform: 'facebook', label: 'djtechtonic', href: 'https://www.facebook.com/djtechtonic' },
+      { platform: 'instagram', label: 'djtechtonic_', href: 'https://instagram.com/djtechtonic_' },
+    ],
+    mixes: ['wStm5QCJGW0', 'LjtqfFBGddU'],
+    whatsappMessage:
+      "Hi K1P Entertainment, I'd like to book DJ Techtonic for an event. Please can you share availability and pricing?",
+  },
+
+  // ===========================================================================
   // 5) MEGAMIND NOVA
   // ===========================================================================
   {
     stageName: 'Megamind Nova',
-    // No real name supplied — the card simply shows the stage name.
+    // No real name supplied, so the card simply shows the stage name.
     role: 'Deejay / Producer / Song Writer',
     eyebrow: 'Artist',
     location: 'Thohoyandou, Limpopo, South Africa',
@@ -154,5 +156,28 @@ export const artists = [
     ],
     whatsappMessage:
       "Hi K1P Entertainment, I'd like to book Megamind Nova for an event. Please can you share availability and pricing?",
+  },
+
+  // ===========================================================================
+  // 6) PRISE TAG (moved to the bottom)
+  // ===========================================================================
+  {
+    stageName: 'Prise Tag',
+    realName: 'Surprise Mabilu',
+    location: 'Thohoyandou, Limpopo, South Africa',
+    image: '/images/artists/prise-tag.jpg',
+    genres: ['Amapiano', 'House Music', '3-Step', 'Hip-Hop'],
+    bio: [
+      `Surprise Mabilu popularly known as Prise Tag is a versatile award-winning DJ based in Thohoyandou, Limpopo, South Africa. He is well known for bringing high energy sets and bringing his outstanding stage presence. His signature sound is Amapiano, but also blends in Deep House, House Music, 3-Step and Hip-Hop, making the musical experience electrifying. From Soulful grooves to crowd-shaking party anthems.`,
+      `Known for his high-energy sets, Prise Tag's Amapiano Exclusives and preference in House Music have made him a rising star in the South African Nightlife and Entertainment scene. He has great abilities of crowd reading and delivering unforgettable sets. That earned him high-profile bookings and club residences. He has also gotten an opportunity to get an interview from Phalaphala FM which has hundreds of thousands of listeners.`,
+      `Prise Tag has been on line-ups at prominent events and venues including but not limited to, Infinity Lounge (Cape Town), Savage Lounge (Cape Town), Dreamclub (Thohoyandou), NewsCafe (Thohoyandou), Perere (Sandton), Zouk (Melville) and many others. His rapidly growing fanbase and unwavering passion for music has made him continue to push boundaries and elevate every stage he steps on to, regardless of the size of the venue.`,
+    ],
+    socials: [
+      { platform: 'facebook', label: 'Prise Tag', href: 'https://www.facebook.com/search/top?q=Prise%20Tag' },
+      { platform: 'instagram', label: 'prise_tag1', href: 'https://instagram.com/prise_tag1' },
+    ],
+    mixes: ['6ARnj8uP-Qs', '5M414jVQAWI', '0DmSC--meLU'],
+    whatsappMessage:
+      "Hi K1P Entertainment, I'd like to book Prise Tag for an event. Please can you share availability and pricing?",
   },
 ];
