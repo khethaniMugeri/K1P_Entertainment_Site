@@ -5,7 +5,7 @@
 // bar, header and footer for free) and adds:
 //   1. a bold hero,
 //   2. a responsive grid of "what we do" area cards,
-//   3. an upcoming-events section,
+//   3. an upcoming-events section (plus the 2025 talent show winner card),
 //   4. the first-visit event pop-up with a live countdown.
 //
 // Everything is MOBILE-FIRST: sections stack in one column on phones and spread
@@ -252,6 +252,9 @@ const serviceStructuredData = [
 
   {/* ===================================================================== */}
   {/* 3. UPCOMING EVENTS, also a responsive grid.                           */}
+  {/*    The last card is the 2025 Venda's Got Talent WINNER. It is written   */}
+  {/*    straight into this page (not events.json), so it never shows in the */}
+  {/*    pop-up or the announcement bar.                                      */}
   {/* ===================================================================== */}
   <section class="reveal container-page py-12 sm:py-16">
     <div class="mb-8 text-center sm:mb-10">
@@ -291,6 +294,27 @@ const serviceStructuredData = [
           );
         })
       }
+
+      {/* ---- WINNER CARD: Venda's Got Talent 2025 ----
+          Same card style as the events so it sits neatly in the next column.
+          The photo file lives in public/images/winners/nthabiseng-2025.jpg.
+          `object-top` keeps her face in view when the photo is cropped. */}
+      <article class="flex h-full flex-col rounded-xl border border-white/10 bg-surface p-6">
+        <span class="mb-3 inline-block w-fit rounded-full bg-brand-red px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+          2025 Winner
+        </span>
+        <img
+          src="/images/winners/nthabiseng-2025.jpg"
+          alt="Nthabiseng, winner of Venda's Got Talent 2025"
+          class="aspect-square w-full rounded-lg object-cover object-top"
+          loading="lazy"
+        />
+        <h3 class="mt-4 text-2xl text-white">Nthabiseng</h3>
+        <p class="mt-1 text-sm text-brand-red">Venda’s Got Talent 2025 Winner</p>
+        <p class="mt-3 flex-1 text-sm text-grey">
+          Congratulations to Nthabiseng, the winner of Piano Valley's Venda's Got Talent 2025.
+        </p>
+      </article>
     </div>
   </section>
 
