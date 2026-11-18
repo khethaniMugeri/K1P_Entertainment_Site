@@ -4,7 +4,7 @@
 // The home page wraps its content in <BaseLayout> (so it gets the announcement
 // bar, header and footer for free) and adds:
 //   1. a bold hero,
-//   2. a responsive grid of "what we do" area cards,
+//   2. a responsive grid of "what we do" area cards (including Venda's Got Talent),
 //   3. an upcoming-events section (with a link to the VGT winners page),
 //   4. the first-visit event pop-up with a live countdown.
 //
@@ -26,13 +26,15 @@ import eventsData from '../data/events.json';
 // capable desktops — phones, reduced-motion and no-WebGL get a static fallback.
 const SHOW_HERO_3D = true;
 
-// The five main areas of the business, shown as cards. Kept as a simple array
+// The main areas of the business, shown as cards. Kept as a simple array
 // so it's easy to edit/reorder later (data-driven, no layout changes needed).
 // `image` is the photo shown in the card's photo area; `imageAlt` describes it
 // for screen readers + SEO. Two cards use special image handling:
 //   • Piano Valley uses `imageFit: 'contain'` so its LOGO (transparent PNG)
 //     sits centred on the dark panel with padding, instead of being stretched.
 //   • Artists uses `imagePosition: 'top'` so the DJ's face is never cropped out.
+// The VGT card uses a landscape picture of the VGT logo on its purple
+// background, so it fills the card like the other photos.
 const areas = [
   {
     title: 'Equipment Hire',
@@ -73,6 +75,15 @@ const areas = [
     href: '/contact?enquiry=Studio+Booking',
     image: '/images/equipment/studio-time.jpg',
     imageAlt: 'K1P recording studio session',
+  },
+  {
+    // NEW: links to the VGT winners page (/vgt).
+    // Photo file: public/images/vgt/vgt-logo.jpg
+    title: "Venda's Got Talent",
+    description: "Meet the winners of Piano Valley's Venda's Got Talent show.",
+    href: '/vgt',
+    image: '/images/vgt/vgt-logo.jpg',
+    imageAlt: "Venda's Got Talent (VGT) logo",
   },
 ];
 
