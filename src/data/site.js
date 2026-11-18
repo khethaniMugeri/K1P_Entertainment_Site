@@ -88,5 +88,6 @@ export const navLinks = [
   { label: 'Merch', href: '/merch' },
   { label: 'Artists', href: '/artists' },
   { label: 'Piano Valley', href: '/piano-valley' },
+  { label: 'VGT', href: '/vgt' },
   { label: 'Contact', href: '/contact' },
 ];
