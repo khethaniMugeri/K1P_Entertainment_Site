@@ -1,1 +1,85 @@
+---
+// vgt.astro: the VENDA'S GOT TALENT PAGE ("/vgt")
+// -----------------------------------------------------------------------------
+// Shows every Venda's Got Talent winner as a card. The winners come from
+// src/data/vgtWinners.js, so to add a new winner you edit that file only.
+// The newest winner is first in the list, so the page shows newest first.
+// Mobile-first: one column on phones, two on tablets, three on desktop.
+// -----------------------------------------------------------------------------
 
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { vgtWinners } from '../data/vgtWinners.js';
+---
+
+<BaseLayout
+  title="Venda's Got Talent Winners | Piano Valley x K1P Entertainment"
+  description="Meet the winners of Venda's Got Talent, the Piano Valley talent show in Thohoyandou, Venda, Limpopo, brought to you by K1P Entertainment."
+>
+  {/* ===================================================================== */}
+  {/* INTRO                                                                  */}
+  {/* ===================================================================== */}
+  <section class="relative overflow-hidden">
+    {/* Soft red glow behind the heading, same as the other pages. */}
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute left-1/2 top-0 h-60 w-60 -translate-x-1/2 rounded-full bg-brand-red/20 blur-3xl"
+    >
+    </div>
+    <div class="container-page relative py-16 text-center sm:py-20">
+      <p class="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-brand-red sm:text-sm sm:tracking-[0.3em]">
+        Piano Valley Presents
+      </p>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl">Venda’s Got Talent</h1>
+      <p class="mx-auto mt-5 max-w-2xl text-base text-grey sm:text-lg">
+        Meet the winners of Venda’s Got Talent. Congratulations to every winner
+        and thank you to everyone who voted.
+      </p>
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* WINNERS GRID. One card per winner, built from vgtWinners.js.           */}
+  {/* `object-top` keeps each winner's face in view when the photo is cropped.*/}
+  {/* ===================================================================== */}
+  <section class="container-page py-8 sm:py-12">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+      {
+        vgtWinners.map((winner) => (
+          <article class="flex h-full flex-col rounded-xl border border-white/10 bg-surface p-6">
+            <span class="mb-3 inline-block w-fit rounded-full bg-brand-red px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+              {winner.year} Winner
+            </span>
+            <img
+              src={winner.image}
+              alt={winner.imageAlt}
+              class="aspect-square w-full rounded-lg object-cover object-top"
+              loading="lazy"
+            />
+            <h2 class="mt-4 text-2xl text-white">{winner.name}</h2>
+            <p class="mt-1 text-sm text-brand-red">
+              Venda’s Got Talent {winner.year} Winner
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* ===================================================================== */}
+  {/* CLOSING CTA, for people who want to know about the next show.          */}
+  {/* ===================================================================== */}
+  <section class="container-page pb-16">
+    <div class="mx-auto max-w-2xl rounded-xl border border-white/10 bg-surface p-6 text-center">
+      <h2 class="text-2xl text-white">Want To Be The Next Winner?</h2>
+      <p class="mt-3 text-sm text-grey">
+        Ask us about the next Venda’s Got Talent and how to enter.
+      </p>
+      <a
+        href="/contact?enquiry=Venda%27s+Got+Talent"
+        class="mt-6 inline-block rounded bg-brand-red px-7 py-4 font-semibold uppercase tracking-wide text-white shadow-glow transition hover:bg-brand-red-dark"
+      >
+        Ask About VGT
+      </a>
+    </div>
+  </section>
+</BaseLayout>
